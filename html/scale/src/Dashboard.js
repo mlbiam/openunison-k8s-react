@@ -29,7 +29,7 @@ function Copyright(props) {
     <Typography variant="body2" color="text.secondary" align="center" {...props}>
       {'Copyright © Tremolo Security, Inc.'}
       <Link color="inherit" href="https://www.tremolosecurity.com/">
-        Your Website
+        https://wwww.tremolosecurity.com/
       </Link>{' '}
       {new Date().getFullYear()}
       {'.'}
@@ -222,11 +222,7 @@ function DashboardContent() {
             >
               OpenUnison
             </Typography>
-            <IconButton color="inherit">
-              <Badge badgeContent={4} color="secondary">
-                <NotificationsIcon />
-              </Badge>
-            </IconButton>
+            
           </Toolbar>
         </AppBar>
         <Drawer variant="permanent" open={open}>
