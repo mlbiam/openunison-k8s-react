@@ -88,9 +88,11 @@ export default function NavList(props) {
                 {props.config.enableApprovals && Object.keys(props.cart).length > 0 ?
 
 
-                    <ListItemButton>
+                    <ListItemButton onClick={(event) => {
+                        props.chooseScreenHandler('checkout');
+                    }}>
                         <ListItemIcon>
-                            <Badge badgeContent={Object.keys(props.cart).length} color="primary">
+                            <Badge badgeContent={Object.keys(props.cart).length} color="primary" >
                                 <ShoppingCartIcon />
                             </Badge>
                         </ListItemIcon>
