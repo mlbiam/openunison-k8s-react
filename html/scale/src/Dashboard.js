@@ -267,7 +267,7 @@ function DashboardContent() {
           { pageName == 'front-page' ? (<FrontPage orgs={orgs} config={config} links={links} title={config.frontPage.title}  orgsById={orgsById}/>) : ("") }
           { pageName == 'user' ? (<User config={config} user={user} userObj={userObj} />) : ("") }
           { pageName == 'request-access' ? (<RequestAccess config={config} user={user} userObj={userObj} orgs={orgs} title={"Request Access"} addWorkflowToCart={addWorkflowToCart} removeWorkflowFromCart={removeWorkflowFromCart} cart={cart} orgsById={orgsById} />) : ("") }
-          { pageName == 'checkout' ? (<CheckOut cart={cart} />) : ""}
+          { pageName == 'checkout' ? (<CheckOut cart={cart} config={config} removeWorkflowFromCart={removeWorkflowFromCart} />) : ""}
           
            
 

@@ -12,7 +12,11 @@ import { CardActionArea, CardHeader } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Title from './Title';
-
+import { TextField } from '@mui/material';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
 export default function CheckOut(props) {
     
 
@@ -21,18 +25,19 @@ export default function CheckOut(props) {
         <React.Fragment>
             <h1>Finish Submitting Your Requests</h1>
             <Grid container spacing={0}>
-                <Grid item sm={12}>
+            
                 <Grid
                 container
                 spacing={2}
                 direction="row"
-                
+                item sm={12}
                 alignItems="stretch"
                 
                
 
             >
                 {Object.keys(props.cart).map(function (wfKey) {
+                    console.log(props.config.reasons);
                         var wf = props.cart[wfKey];
                         return (<Grid  item   xs={12}  key={wf.uuid} sx={{ mt: 4, mb: 4 }}>
                             <Card variant="outlined" style={{display: 'flex', justifyContent: 'space-between', flexDirection: 'column',height: "100%"}}>
@@ -42,13 +47,36 @@ export default function CheckOut(props) {
                                 <Typography variant="body1">
                                 {wf.description}
                                 </Typography>
+                                {(props.config.requireReasons && ! props.config.reasonIsList ? <TextField label="Reason for request" fullWidth margin="normal"  value={wf.reason}/> : "") }
+                                {(props.config.requireReasons && props.config.reasonIsList ? 
+                                    <FormControl fullWidth>
+                                    <InputLabel id="demo-simple-select-label">Reason for request</InputLabel>
+                                    <Select
+                                      labelId="demo-simple-select-label"
+                                      id="demo-simple-select"
+                                      
+                                      label="Reason for request"
+                                      
+                                    >
+                                    {
+                                        
+                                        props.config.reasons.map(function (reason) {
+                                            
+                                            return <MenuItem value={reason}>{reason}</MenuItem>
+                                        })
+                                    }
+                                    
+                                    </Select>
+                                  </FormControl>
+                                    
+                                    : "") }
                                     
 
                                 </CardContent>
                                 <CardActions>
                                 <Button variant="contained" onClick={(event) => {
-                                        props.updateCart(event,wf);
-                                    }} >{(props.cart[wf.uuid] ? "Remove from Cart" : "Add to Cart")}</Button>
+                                        props.removeWorkflowFromCart(wf);
+                                    }} >Remove from Cart</Button>
                                    
                                     
                                 </CardActions>
@@ -63,7 +91,7 @@ export default function CheckOut(props) {
                 })};
             </Grid>
                 </Grid>
-            </Grid>
+        
         </React.Fragment>
     );
 }

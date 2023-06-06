@@ -51,7 +51,7 @@ export default function Orgs(props) {
         aria-label="file system navigator"
         defaultCollapseIcon={<ExpandMoreIcon />}
         defaultExpandIcon={<ChevronRightIcon />}
-        sx={{ height: 240, flexGrow: 1, maxWidth: 400, overflowY: 'auto' }}
+        sx={{ height: 240, flexGrow: 1, maxWidth: 400, overflowY: 'visible' ,overflowX: 'hidden'}}
         defaultExpanded={[props.orgs.id]}
         selected={selectedNode}
         defaultSelected={props.orgs.id}
