@@ -83,7 +83,7 @@ export default function Reports(props) {
                 
                 {/* Recent Orders */}
                 <Grid item sm={12}>
-                    <ReportsList reports={reports} setReport={props.setReport} />
+                    <ReportsList reports={reports} setReport={props.setReport} chooseScreenHandler={props.chooseScreenHandler}  />
                 </Grid>
             </Grid>
         </React.Fragment>

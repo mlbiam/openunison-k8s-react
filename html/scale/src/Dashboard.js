@@ -27,6 +27,7 @@ import CheckOut from './CheckOut.js';
 import Approvals from './Approvals.js';
 import Approval from './Approval.js';
 import Reports from './Reports.js';
+import Report from './Report.js';
 
 function Copyright(props) {
   return (
@@ -297,8 +298,8 @@ function DashboardContent() {
           { pageName == 'checkout' ? (<CheckOut cart={cart} config={config} removeWorkflowFromCart={removeWorkflowFromCart} />) : ""}
           { pageName == 'approvals' ? (<Approvals approvals={approvals} setCurrentApproval={setCurrentApproval} chooseScreenHandler={chooseScreenHandler} />) : ""}
           { pageName == 'current-approval' ? (<Approval currentApproval={currentApproval} loadOpenApprovals={loadOpenApprovals}/> ) : "" }
-          { pageName == 'reports' ? (<Reports config={config} user={user} userObj={userObj} orgs={orgs} title={"Reports"}  orgsById={orgsById} setReport={setReport} />) : ("") }
-
+          { pageName == 'reports' ? (<Reports config={config} user={user} userObj={userObj} orgs={orgs} title={"Reports"}  orgsById={orgsById} setReport={setReport} chooseScreenHandler={chooseScreenHandler} />) : ("") }
+          { pageName == 'report' ? (<Report config={config} user={user} userObj={userObj} report={report}  /> ) : ""}
 
 
             

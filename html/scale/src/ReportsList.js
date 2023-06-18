@@ -62,7 +62,45 @@ export default function ReportsList(props) {
 
     function loadReport(report) {
         setShowSubmitDialog(true);
-        fetch("https://k8sou.apps.192-168-2-14.nip.io/scalereact/main/reports/" + report.name)
+        var url = "https://k8sou.apps.192-168-2-14.nip.io/scalereact/main/reports/" + report.name;
+        var params = '';
+
+        if (report.parameters.indexOf("beginDate") >= 0) {
+            if (params == '') {
+                params = "?";
+            } else {
+                params = params + "&";
+            }
+
+            params = params + "beginDate=" + beginDate;
+        }
+
+        if (report.parameters.indexOf("endDate") >= 0) {
+            if (params == '') {
+                params = "?";
+            } else {
+                params = params + "&";
+            }
+
+            params = params + "endDate=" + endDate;
+        }
+
+        if (report.parameters.indexOf("userKey") >= 0) {
+            if (params == '') {
+                params = "?";
+            } else {
+                params = params + "&";
+            }
+
+            params = params + "userKey=" + reportUserName;
+        }
+
+        
+        url += params;
+
+
+
+        fetch(url)
         .then((response) => {
             if (response.ok) {
                 return response.json();
@@ -71,8 +109,10 @@ export default function ReportsList(props) {
             }
         })
         .then((json) => {
+            json.when = Date().toLocaleString();
             props.setReport(json);
             setShowSubmitDialog(false);
+            props.chooseScreenHandler('report');
         })
     }
 
@@ -184,7 +224,11 @@ export default function ReportsList(props) {
                 </DialogContent>
                 <DialogActions>
                     <Button disabled={!enablesubmitReport} onClick={(event) => {
-
+                        setReportUserName("");
+                        setBeginDate(0);
+                        setEndDate(0);
+                        setShowParamsDialog(false);
+                        loadReport(selectedReport);
                         
                     }}>Request Report</Button>
                     <Button onClick={(event) => {
