@@ -16,6 +16,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Button from '@mui/material/Button';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
 export default function NavList(props) {
 
@@ -99,7 +100,26 @@ export default function NavList(props) {
                         <ListItemText primary="Checkout" />
                     </ListItemButton>
                     : ""}
-                {props.config.enableApprovals ? <ListItemButton>
+
+                {props.config.enableApprovals && props.approvals.open.length > 0 ?
+
+
+                <ListItemButton onClick={(event) => {
+                    props.chooseScreenHandler('approvals');
+                }}>
+                    <ListItemIcon>
+                        <Badge badgeContent={props.approvals.open.length} color="primary" >
+                            <CheckCircleOutlineIcon />
+                        </Badge>
+                    </ListItemIcon>
+                    <ListItemText primary="Open Approvals" />
+                </ListItemButton>
+                : ""}
+
+
+                {props.config.enableApprovals ? <ListItemButton onClick={(event) => {
+                    props.chooseScreenHandler('reports');
+                }}>
                     <ListItemIcon>
                         <SummarizeIcon />
                     </ListItemIcon>

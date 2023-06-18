@@ -24,6 +24,9 @@ import User from './User'
 import {useEffect, useState} from 'react';
 import {loadAttributes } from './tools/biz.js'
 import CheckOut from './CheckOut.js';
+import Approvals from './Approvals.js';
+import Approval from './Approval.js';
+import Reports from './Reports.js';
 
 function Copyright(props) {
   return (
@@ -109,6 +112,9 @@ function DashboardContent() {
   const [links,setLinks] = React.useState({"urls":[]})
   const [cart,setCart] = React.useState({})
   const [orgsById,setOrgsById] = React.useState({})
+  const [approvals,setApprovals] = React.useState({"open":[]});
+  const [currentApproval,setCurrentApproval] = React.useState({});
+  const [report,setReport] = React.useState({});
 
   function addWorkflowToCart(wf) {
     var newCart = {...cart}
@@ -124,14 +130,31 @@ function DashboardContent() {
     setCart(newCart);
   }
 
+  function loadOpenApprovals() {
+    fetch("https://k8sou.apps.192-168-2-14.nip.io/scalereact/main/approvals")
+              .then(response => {
+                return response.json();
+              })
+              .then(dataApprovals => {
+                var newApprovals = {};
+                newApprovals["open"] = dataApprovals.approvals.sort(
+                  (a,b) => {
+                    return (a.approvalStart - b.approvalStart);
+                  }
+                );
+
+                setApprovals(newApprovals);
+              }); 
+  }
+
   const fetchData = () => {
-    fetch("http://localhost:7001/main/config")
+    fetch("https://k8sou.apps.192-168-2-14.nip.io/scalereact/main/config")
       .then(response => {
         return response.json()
       })
       .then(dataConfig => {
         setConfig(dataConfig);
-        fetch("http://localhost:7001/main/user")
+        fetch("https://k8sou.apps.192-168-2-14.nip.io/scalereact/main/user")
         .then(response => {
           return response.json()
         })
@@ -142,7 +165,7 @@ function DashboardContent() {
           setUserObj(localUserObj);
 
           if (! dataConfig.showPortalOrgs) {
-            fetch("http://localhost:7001/main/urls")
+            fetch("https://k8sou.apps.192-168-2-14.nip.io/scalereact/main/urls")
             .then(
               response => {
                 return response.json()
@@ -155,7 +178,7 @@ function DashboardContent() {
           }
 
 
-          fetch("http://localhost:7001/main/orgs")
+          fetch("https://k8sou.apps.192-168-2-14.nip.io/scalereact/main/orgs")
           .then(response => {
             return response.json()
           })
@@ -178,6 +201,10 @@ function DashboardContent() {
             setOrgs(dataOrgs);
             setPageName('front-page');
           });
+
+          if (dataConfig.enableApprovals) {
+            loadOpenApprovals();
+          }
 
         }) 
       })
@@ -242,7 +269,7 @@ function DashboardContent() {
           </Toolbar>
           <Divider />
           
-            <NavList user={user} config={config} userObj={userObj} chooseScreenHandler={chooseScreenHandler} pageName={pageName} cart={cart} />
+            <NavList user={user} config={config} userObj={userObj} chooseScreenHandler={chooseScreenHandler} pageName={pageName} cart={cart} approvals={approvals} />
             
           
         </Drawer>
@@ -268,8 +295,9 @@ function DashboardContent() {
           { pageName == 'user' ? (<User config={config} user={user} userObj={userObj} />) : ("") }
           { pageName == 'request-access' ? (<RequestAccess config={config} user={user} userObj={userObj} orgs={orgs} title={"Request Access"} addWorkflowToCart={addWorkflowToCart} removeWorkflowFromCart={removeWorkflowFromCart} cart={cart} orgsById={orgsById} />) : ("") }
           { pageName == 'checkout' ? (<CheckOut cart={cart} config={config} removeWorkflowFromCart={removeWorkflowFromCart} />) : ""}
-          
-           
+          { pageName == 'approvals' ? (<Approvals approvals={approvals} setCurrentApproval={setCurrentApproval} chooseScreenHandler={chooseScreenHandler} />) : ""}
+          { pageName == 'current-approval' ? (<Approval currentApproval={currentApproval} loadOpenApprovals={loadOpenApprovals}/> ) : "" }
+          { pageName == 'reports' ? (<Reports config={config} user={user} userObj={userObj} orgs={orgs} title={"Reports"}  orgsById={orgsById} setReport={setReport} />) : ("") }
 
 
 

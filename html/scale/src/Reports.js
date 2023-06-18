@@ -7,75 +7,44 @@ import OrgInfo from './OrgInfo';
 import { useEffect, useState } from 'react';
 import AccessWorkflows from './AccessWorkflows';
 import { TextField } from '@mui/material';
+import ReportsList from './ReportsList';
 
-export default function RequestAccess(props) {
-    const [workflows, setWorkflows] = React.useState({ wfs: [] })
-    const [visibleWorkflows, setVisibleWorkflows] = React.useState({ wfs: [] })
-    const [filter, setFilter] = React.useState("");
+export default function Reports(props) {
+    const [reports,setReports] = React.useState({"reports":[]})
     const [currentOrg, setCurrentOrg] = React.useState({});
 
-    function fetchWorkflows(node) {
-        fetch("https://k8sou.apps.192-168-2-14.nip.io/scalereact/main/workflows/org/" + node)
+
+    function setReportsList(node) {
+        fetch("https://k8sou.apps.192-168-2-14.nip.io/scalereact/main/reports/org/" + node)
             .then(response => {
 
                 if (response.status == 200) {
                     return response.json();
                 } else {
-                    return Promise.resolve([]);
+                    return Promise.resolve({"reports":[]});
                 }
 
 
             })
             .then(data => {
-                var wfs = data;
-                var newLinks = { "wfs": wfs };
-                setWorkflows(newLinks);
-                setVisibleWorkflows(newLinks);
-                setFilter("");
+                var reps = data.reports;
+                var newReports = { "reports": reps };
+                setReports(newReports);
+                
             })
     }
 
-    function handleRequestAccessOrgClick(event, node) {
+    function handleReportOrgClick(event, node) {
         setCurrentOrg(props.orgsById[node]);
-        fetchWorkflows(node);
+        setReportsList(node);
 
     }
 
-    function onWokrlfowChange(event) {
-
-        filterWorkflows(event.target.value);
-    }
-
-    function filterWorkflows(filterValue) {
-        setFilter(filterValue);
-
-
-        var newVisibleWfs = { wfs: [] };
-        workflows.wfs.map((wf) => {
-
-
-            if (filterValue == '' || wf.label.includes(filterValue)) {
-                newVisibleWfs.wfs.push(wf);
-            }
-        });
-
-        setVisibleWorkflows(newVisibleWfs);
-    }
-
-    function updateCart(event, wf) {
-
-        if (props.cart[wf.uuid]) {
-            props.removeWorkflowFromCart(wf);
-        } else {
-            props.addWorkflowToCart(wf);
-        }
-
-        filterWorkflows(filter)
-    }
+    
 
     useEffect(() => {
         setCurrentOrg(props.orgs);
-        fetchWorkflows(props.orgs.id);
+        setReportsList(props.orgs.id);
     }, [props.orgs])
 
 
@@ -94,7 +63,7 @@ export default function RequestAccess(props) {
                             height: 240
                         }}
                     >
-                        <Orgs orgs={props.orgs} config={props.config} flag={'showInRequest'} handleOrgClick={handleRequestAccessOrgClick} title={props.title} />
+                        <Orgs orgs={props.orgs} config={props.config} flag={'showInReports'} handleOrgClick={handleReportOrgClick} title={props.title} />
                     </Paper>
                 </Grid>
                 {/* Recent Deposits */}
@@ -111,12 +80,10 @@ export default function RequestAccess(props) {
                         <OrgInfo org={currentOrg} />
                     </Paper>
                 </Grid>
-                <Grid item sm={12}>
-                    <TextField label="Filter by label" fullWidth margin="normal" onChange={(event) => onWokrlfowChange(event)} value={filter} />
-                </Grid>
+                
                 {/* Recent Orders */}
                 <Grid item sm={12}>
-                    <AccessWorkflows access={visibleWorkflows} updateCart={updateCart} cart={props.cart} />
+                    <ReportsList reports={reports} setReport={props.setReport} />
                 </Grid>
             </Grid>
         </React.Fragment>

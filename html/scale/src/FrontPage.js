@@ -10,10 +10,8 @@ export default function FrontPage(props) {
     const [links, setLinks] = React.useState({ "urls": [] })
     const [currentOrg, setCurrentOrg] = React.useState({});
 
-    function handlePortalOrgClick(event, node) {
-
-        setCurrentOrg(props.orgsById[node]);
-        fetch("http://localhost:7001/main/urls/org/" + node)
+    function fetchLinks(node) {
+        fetch("https://k8sou.apps.192-168-2-14.nip.io/scalereact/main/urls/org/" + node)
             .then(response => {
 
                 if (response.status == 200) {
@@ -29,12 +27,20 @@ export default function FrontPage(props) {
                 var newLinks = { "urls": urls };
                 setLinks(newLinks);
             })
+    }
+
+    function handlePortalOrgClick(event, node) {
+
+        setCurrentOrg(props.orgsById[node]);
+        fetchLinks(node);
+        
 
     }
 
     useEffect(() => {
         //if (! props.config.showPortalOrgs) {
         setLinks(props.links);
+        fetchLinks(props.orgs.id);
         //}
     }, [props.links])
 
