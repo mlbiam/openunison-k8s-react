@@ -102,21 +102,81 @@ export default function ReportsList(props) {
             
                 <DialogTitle id="alert-dialog-title">Report Parameters</DialogTitle>
                 <DialogContent>
-                    <DialogContentText id="alert-dialog-description">Report Parameters</DialogContentText>
+                    
                     <Stack spacing={2}>
                         
-                        {selectedReport.parameters.indexOf("userKey") >= 0 ? <TextField label="User Name" fullWidth margin="normal" onChange={(event) => {setReportUserName(event.target.value);checkIfCanSubmitReport();}}/> : ""}
+                        {selectedReport.parameters.indexOf("userKey") >= 0 ? <TextField label="User Name" fullWidth margin="normal" onChange={(event) => {
+                            setReportUserName(event.target.value);
+                            
+                            var allCnditionsSet = true;
+
+                            allCnditionsSet = allCnditionsSet && event.target.value.length > 0;
+
+                            if (selectedReport.parameters.indexOf("beginDate") >= 0) {
+                                allCnditionsSet = allCnditionsSet && beginDate > 0;
+                            }
+                    
+                            if (selectedReport.parameters.indexOf("endDate") >= 0) {
+                                allCnditionsSet = allCnditionsSet && endDate > 0;
+                            }
+                    
+                            setEnableSubmitReport(allCnditionsSet);
+
+
+                            }}/> : ""}
                         {selectedReport.parameters.indexOf("beginDate") >= 0  ?
                         
                             <LocalizationProvider dateAdapter={AdapterDayjs}>
-                            <DatePicker  label="Begin Date" labelId="begindate-label" onChange={(newValue) => {setBeginDate(newValue.millisecond());checkIfCanSubmitReport();}} />
+                            <DatePicker  label="Begin Date" labelId="begindate-label" onChange={(newValue) => {
+                                
+                                
+                                if (newValue == null) {
+                                    setBeginDate(0);
+                                    setEnableSubmitReport(false);
+                                    return;
+                                }
+                                
+                                setBeginDate(newValue.unix() * 1000);
+                                
+                                var allCnditionsSet = true;
+                                
+                                if (selectedReport.parameters.indexOf("userKey") >= 0) {
+                                    allCnditionsSet = allCnditionsSet && reportUserName.length > 0;
+                                }
+
+                                if (selectedReport.parameters.indexOf("endDate") >= 0) {
+                                    allCnditionsSet = allCnditionsSet && endDate > 0;
+                                }
+                        
+                                setEnableSubmitReport(allCnditionsSet);
+                            }} />
                             </LocalizationProvider>
                         
                         : "" }
                         {selectedReport.parameters.indexOf("endDate") >= 0  ?
                         
                         <LocalizationProvider dateAdapter={AdapterDayjs}>
-                        <DatePicker  label="End Date" labelId="begindate-label" onChange={(newValue) => {setEndDate(newValue.millisecond());checkIfCanSubmitReport();}} />
+                        <DatePicker  label="End Date" labelId="begindate-label" onChange={(newValue) => {
+                            if (newValue == null) {
+                                setEndDate(0);
+                                setEnableSubmitReport(false);
+                                return;
+                            }
+
+                            setEndDate(newValue.unix() * 1000);
+                            
+                            var allCnditionsSet = true;
+                            
+                            if (selectedReport.parameters.indexOf("userKey") >= 0) {
+                                allCnditionsSet = allCnditionsSet && reportUserName.length > 0;
+                            }
+
+                            if (selectedReport.parameters.indexOf("beginDate") >= 0) {
+                                allCnditionsSet = allCnditionsSet && beginDate > 0;
+                            }
+                    
+                            setEnableSubmitReport(allCnditionsSet);
+                        }} />
                         </LocalizationProvider>
                     
                     : "" }
@@ -170,6 +230,7 @@ export default function ReportsList(props) {
                                         if (report.parameters.length == 0) {
                                             loadReport(report);
                                         } else {
+                                            setEnableSubmitReport(false);
                                             setSelectedReport({...report});
                                             setShowParamsDialog(true);
                                         }
