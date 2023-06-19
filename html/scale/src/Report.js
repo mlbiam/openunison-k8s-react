@@ -27,8 +27,34 @@ import Alert from '@mui/material/Alert';
 import ListItemText from '@mui/material/ListItemText';
 import List from '@mui/material/List';
 import { DataGrid, GridColDef, GridValueGetterParams } from '@mui/x-data-grid';
-
+import { styled } from '@mui/material/styles';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell, { tableCellClasses } from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
 import Stack from '@mui/material/Stack';
+
+const StyledTableCell = styled(TableCell)(({ theme }) => ({
+    [`&.${tableCellClasses.head}`]: {
+      backgroundColor: theme.palette.common.black,
+      color: theme.palette.common.white,
+    },
+    [`&.${tableCellClasses.body}`]: {
+      fontSize: 14,
+    },
+  }));
+  
+  const StyledTableRow = styled(TableRow)(({ theme }) => ({
+    '&:nth-of-type(odd)': {
+      backgroundColor: theme.palette.action.hover,
+    },
+    // hide last border
+    '&:last-child td, &:last-child th': {
+      border: 0,
+    },
+  }));
 
 export default function Report(props) {
     
@@ -41,25 +67,49 @@ export default function Report(props) {
             <h2>{props.report.name}</h2>
             <h3>{props.report.description}</h3>
             {props.report.when}
-            </Stack>
+            <Button
+            onClick={(event) => {
+                const requestOptions = {
+                    mode: "cors",
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(props.report)
+                };
+
+                fetch("https://k8sou.apps.192-168-2-14.nip.io/scalereact/main/reports/excelx",requestOptions)
+                .then((response) => {
+                    return response.blob();
+                })
+                .then((blob) => {
+                    console.log(blob);
+                    
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.setAttribute('download', `${props.report.name}-${props.report.when}.xlsx`);
+                    document.body.appendChild(link);
+                    link.click();
+                    
+                    
+                    
+                });
+
+            }}
+            >Export to Excel</Button>
             
-            var columns = [];
-            props.report.dataFields.map(function(dataField) {
-                columns.push(
-                    {
-                        field: dataField,
-                        headerName: dataField
-                    }
-                )
-            });
+            
+            
                     
             
 
 
             {
                 props.report.grouping.map(function(dataset) {
-                    console.log("here");
-                    console.log(dataset.data);
+                    
+                    for (var i = 0;i<dataset.data.length;i++) {
+                        dataset.data[i]["id"] = i;
+                        
+                    }
                     return <React.Fragment>
                         
                         <Grid container spacing={0}>
@@ -69,16 +119,38 @@ export default function Report(props) {
                                                     
                             
                         </Grid>
-                        <DataGrid
-                            rows={dataset.data}
-                            columns={columns}
-                            
-                        />
+                        
+
+                        <TableContainer >
+                        <Table  aria-label="customized table">
+                            <TableHead>
+                            <TableRow>
+                            {props.report.dataFields.map(function(dataField) {
+                               return <StyledTableCell align="left">{dataField}</StyledTableCell> 
+                            })}
+                                
+                            </TableRow>
+                            </TableHead>
+                            <TableBody>
+                            {dataset.data.map((row) => (
+                                <StyledTableRow key={row.id}>
+                                {props.report.dataFields.map(function(dataField) {
+                                    return <StyledTableCell>{row[dataField]}</StyledTableCell>
+                                })}
+                                
+                                
+                                </StyledTableRow>
+                            ))}
+                            </TableBody>
+                        </Table>
+                        </TableContainer>
+
+                        
                     </React.Fragment>
                 })
             }
             
-                    
+            </Stack>
 
 
 
