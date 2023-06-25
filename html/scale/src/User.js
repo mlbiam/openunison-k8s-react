@@ -23,21 +23,134 @@ import InputAdornment from '@mui/material/InputAdornment';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 
 import Grid from '@mui/material/Grid';
+import Stack from '@mui/material/Stack';
+import Button from '@mui/material/Button';
 
-function displayName(config, user) {
-    for (var i = 0; i < user.attributes.length; i++) {
-        if (user.attributes[i].name == config.displayNameAttribute) {
-            return user.attributes[i].values[0];
-        }
-    }
-}
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import LinearProgress from '@mui/material/LinearProgress';
+import Dialog from '@mui/material/Dialog';
+
+import Alert from '@mui/material/Alert';
+
 
 
 export default function User(props) {
-    
+
+    const [showSubmitDialog, setShowSubmitDialog] = React.useState(false);
+    const [submitRequestErrors, setSubmitRequestErrors] = React.useState([]);
+    const [submitRequestSuccess, setSubmitRequestSuccess] = React.useState(false);
+
+    function displayName(config, user) {
+        for (var i = 0; i < user.attributes.length; i++) {
+            if (user.attributes[i].name == config.displayNameAttribute) {
+                return user.attributes[i].values[0];
+            }
+        }
+    }
+
+    function showUserAttributes(props) {
+        if (props.config.canEditUser) {
+            return <Stack spacing={0}>
+
+                {(submitRequestErrors.length > 0 ?
+                    <Alert severity="error">
+                        <b>There was a problem submitting {displayName(props.config, props.user)}'s profile update:</b>
+                        <ul>
+                            {
+                                submitRequestErrors.map((msg) => {
+                                    return <li>{msg}</li>
+                                })
+                            }
+                        </ul>
+                    </Alert>
+
+                    : "")}
+                {(submitRequestSuccess > 0 ?
+                    <Alert severity="success">
+                        <b>{displayName(props.config, props.user)}'s profile update has been submitted</b>
+                    </Alert>
+
+                    : "")}
+
+                {Object.keys(props.userObj.attributes).map(function (attrName) {
+                    var attribute = props.userObj.attributes[attrName]
+
+
+
+
+                    return <TextField id={attrName}
+                        label={props.config.attributes[attrName].displayName}
+                        disabled={props.config.attributes[attrName].readOnly}
+                        fullWidth
+                        margin="normal"
+                        defaultValue={attribute}
+                        onChange={(event) => {props.userObj.attributes[attrName] = event.target.value;}}
+
+
+                    />
+                }
+                )}
+                <Button onClick={(event => {
+                    setShowSubmitDialog(true);
+
+                    const requestOptions = {
+                        mode: "cors",
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(props.userObj.attributes)
+                    };
+
+                    fetch("https://k8sou.apps.192-168-2-14.nip.io/scalereact/main/user",requestOptions)
+                        .then(response => {
+                            if (response.status == 200) {
+                                setSubmitRequestSuccess(true);
+                                setShowSubmitDialog(false);
+                                setSubmitRequestErrors([]);
+                                
+                                return Promise.resolve({});
+                            } else {
+                                return response.json();
+                            }
+                        })
+                        .then(data => {
+                            if (data.errors) {
+                                setSubmitRequestErrors(data.errors);
+                                setShowSubmitDialog(false);
+                            }
+                        })
+
+
+                })} >Save</Button>
+            </Stack>
+        } else {
+            return <Grid container spacing={0}>
+                {Object.keys(props.userObj.attributes).map(function (attrName) {
+                    var attribute = props.userObj.attributes[attrName]
+                    return <React.Fragment><Grid item xs={12} md={4} ><b>{props.config.attributes[attrName].displayName}</b></Grid><Grid item xs={12} md={8}>{attribute}</Grid></React.Fragment>
+                }
+                )}
+            </Grid>
+        }
+    }
 
     return (
         <React.Fragment>
+            <Dialog
+                open={showSubmitDialog}
+
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+            >
+                <DialogTitle id="alert-dialog-title">Submitting {displayName(props.config, props.user)}'s profile...</DialogTitle>
+                <DialogContent>
+                    <DialogContentText id="alert-dialog-description">
+                        Submitting {displayName(props.config, props.user)}'s profile updates...
+                        <LinearProgress />
+                    </DialogContentText>
+                </DialogContent>
+            </Dialog>
             <h2>{displayName(props.config, props.user)}'s Profile</h2>
             {/* contains two columns: attributes and groups*/}
             <Grid container
@@ -47,28 +160,9 @@ export default function User(props) {
                 {/* attributes */}
                 <Grid item xs={12} sm={6} >
                     <h3>Attributes</h3>
-                    <TableContainer >
-                        <Table aria-label="user attributes">
 
-                            <TableBody>
-                                {Object.keys(props.userObj.attributes).map(function (attrName) {
-                                    var attribute = props.userObj.attributes[attrName]
-                                    return <TextField   id={attrName}
-                                    label={props.config.attributes[attrName].displayName}
-                                    disabled={true}
-                                    fullWidth
-                                    margin="normal"
-                                    defaultValue={attribute} 
-                                    
-                                    sx={{
-                                        "& fieldset": { border: 'none' },
-                                      }}
-                                    />
-                                }
-                                )}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
+                    {showUserAttributes(props)}
+
 
 
 
