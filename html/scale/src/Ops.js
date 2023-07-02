@@ -39,6 +39,7 @@ import MenuItem from '@mui/material/MenuItem';
 
 
 import Alert from '@mui/material/Alert';
+import { Checkbox } from '@mui/material';
 
 
 
@@ -47,7 +48,8 @@ export default function Ops(props) {
     const [submitRequestErrors, setSubmitRequestErrors] = React.useState([]);
     const [submitRequestSuccess, setSubmitRequestSuccess] = React.useState(false);
     const [selectedBase,setSelectedBase] = React.useState(props.opsConfig.searchBases[0]);
-    
+    const [forceRedraw, setFoceRedraw] = React.useState(Math.random);
+
     function displayName(config, user) {
         for (var i = 0; i < user.attributes.length; i++) {
             if (user.attributes[i].name == config.displayNameAttribute) {
@@ -74,7 +76,7 @@ export default function Ops(props) {
                     </DialogContentText>
                 </DialogContent>
             </Dialog>
-            <Stack>
+            <Stack spacing={(2)}>
                 <h2>{props.config.frontPage.title}</h2>
                 {props.config.frontPage.text}
                 <FormControl fullWidth>
@@ -99,6 +101,16 @@ export default function Ops(props) {
 
                     </Select>
                 </FormControl>
+                <Grid container alignContent="center" alignItems="center">
+                    { props.opsConfig.searchableAttributes.map(attrCfg => {
+                        return <Grid item xs={12} md={3} alignItems="center" alignContent="center" display="flex">
+                            <Checkbox checked={attrCfg.picked} onClick={event => {attrCfg.picked = event.target.checked;setFoceRedraw(Math.random)}} />
+                            <TextField label={attrCfg.label}  margin="normal" value={attrCfg.value} onChange={(event) => { attrCfg.value = event.target.value;setFoceRedraw(Math.random) }} />
+                        </Grid>
+                    })
+                    
+                    }
+                </Grid>
             </Stack>
             
         </React.Fragment>
