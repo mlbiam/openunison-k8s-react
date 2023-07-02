@@ -28,6 +28,7 @@ import Approvals from './Approvals.js';
 import Approval from './Approval.js';
 import Reports from './Reports.js';
 import Report from './Report.js';
+import Ops from './Ops.js';
 
 function Copyright(props) {
   return (
@@ -116,12 +117,24 @@ function DashboardContent() {
   const [approvals,setApprovals] = React.useState({"open":[]});
   const [currentApproval,setCurrentApproval] = React.useState({});
   const [report,setReport] = React.useState({});
+  const [enableOps,setEnableOps] = React.useState(false);
+  const [opsConfig,setOpsConfig] = React.useState({});
 
   function addWorkflowToCart(wf) {
     var newCart = {...cart}
 
-    newCart[wf.uuid] = wf;
-    setCart(newCart);
+    fetch("https://k8sou.apps.192-168-2-14.nip.io/scalereact/main/workflows/candelegate?workflowName=" + wf.name + "&uuid=" + wf.uuid)
+    .then(response => {
+      return response.json();
+    })
+    .then(json => {
+      wf.canPreApprove = json.canPreApprove;
+      wf.canDelegate = json.canDelegate;
+      newCart[wf.uuid] = wf;
+      setCart(newCart);
+    })
+
+    
 
   }
 
@@ -149,6 +162,23 @@ function DashboardContent() {
   }
 
   const fetchData = () => {
+
+    fetch("https://k8sou.apps.192-168-2-14.nip.io/scalereact/ops/config")
+      .then(response => {
+        setEnableOps(response.ok);
+        if (response.ok) {
+          return response.json();
+        } else {
+          return Promise.resolve({});
+        }
+      })
+      .then(data => {
+        console.log("ops");
+        console.log(data);
+        setOpsConfig(data);
+      });
+
+
     fetch("https://k8sou.apps.192-168-2-14.nip.io/scalereact/main/config")
       .then(response => {
         return response.json()
@@ -270,7 +300,7 @@ function DashboardContent() {
           </Toolbar>
           <Divider />
           
-            <NavList user={user} config={config} userObj={userObj} chooseScreenHandler={chooseScreenHandler} pageName={pageName} cart={cart} approvals={approvals} />
+            <NavList user={user} config={config} userObj={userObj} chooseScreenHandler={chooseScreenHandler} pageName={pageName} cart={cart} approvals={approvals} enableOps={enableOps} />
             
           
         </Drawer>
@@ -300,6 +330,7 @@ function DashboardContent() {
           { pageName == 'current-approval' ? (<Approval currentApproval={currentApproval} loadOpenApprovals={loadOpenApprovals}/> ) : "" }
           { pageName == 'reports' ? (<Reports config={config} user={user} userObj={userObj} orgs={orgs} title={"Reports"}  orgsById={orgsById} setReport={setReport} chooseScreenHandler={chooseScreenHandler} />) : ("") }
           { pageName == 'report' ? (<Report config={config} user={user} userObj={userObj} report={report}  /> ) : ""}
+          { pageName == 'ops' ? (<Ops config={config} user={user} userObj={userObj} opsConfig={opsConfig}  /> ) : ""}
 
 
             

@@ -17,6 +17,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import Button from '@mui/material/Button';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
 
 export default function NavList(props) {
 
@@ -125,6 +126,25 @@ export default function NavList(props) {
                     </ListItemIcon>
                     <ListItemText primary="Reports" />
                 </ListItemButton> : ""}
+
+                { props.enableOps ? 
+                
+                <ListItemButton
+                    onClick={(event) => {
+                        props.chooseScreenHandler('ops');
+
+                    }}
+
+
+                >
+                    <ListItemIcon>
+                        <PersonAddIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="Users" />
+                </ListItemButton>
+                
+                
+                : ""}
                 <ListItemButton
                     onClick={(event) => {
                         if (Object.keys(props.cart).length > 0) {
@@ -142,6 +162,7 @@ export default function NavList(props) {
                     </ListItemIcon>
                     <ListItemText primary="Logout" />
                 </ListItemButton>
+                
             </List>
         </React.Fragment>
     );

@@ -95,11 +95,23 @@ export default function User(props) {
                 <Button onClick={(event => {
                     setShowSubmitDialog(true);
 
+                    var newAttributes = {};
+                    Object.keys(props.userObj.attributes).map(attrName => {
+                        if (! props.config.attributes[attrName].readOnly) {
+                            newAttributes[attrName] = {
+
+                                "name": attrName,
+                                "value": props.userObj.attributes[attrName]
+                            }
+                        }
+                    });
+
+
                     const requestOptions = {
                         mode: "cors",
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(props.userObj.attributes)
+                        body: JSON.stringify(newAttributes)
                     };
 
                     fetch("https://k8sou.apps.192-168-2-14.nip.io/scalereact/main/user",requestOptions)
