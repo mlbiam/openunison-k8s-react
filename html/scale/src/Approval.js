@@ -39,7 +39,7 @@ export default function Approval(props) {
     const [showSubmitDialog,setShowSubmitDialog] = React.useState(false);
     const [submitRequestErrors,setSubmitRequestErrors] = React.useState([]);
     const [submitRequestSuccess,setSubmitRequestSuccess] = React.useState(false);
-    
+
     return (
         <React.Fragment>
             <Dialog
@@ -78,8 +78,15 @@ export default function Approval(props) {
             
 
             <h2>Request Details</h2>
+            <h3>Subject Information</h3>
             <Grid container spacing={0}>
-                <Grid item xs={12} md={4} ><b>Subject</b></Grid><Grid item xs={12} md={8}>{approval.userObj.userID}</Grid>
+                
+                {Object.keys(props.config.attributes).map(attr => {
+                    var attribute = props.config.attributes[attr];
+                    if (approval.userObj.attribs[attribute.displayName]) {
+                        return <React.Fragment><Grid item xs={12} md={4} ><b>{attribute.displayName}</b></Grid><Grid item xs={12} md={8}>{approval.userObj.attribs[attribute.displayName].values[0]}</Grid></React.Fragment>
+                    }
+                })}
                 <Grid item xs={12} md={4} ><b>Name</b></Grid><Grid item xs={12} md={8}>{approval.wfLabel}</Grid>
                 <Grid item xs={12} md={4} ><b>Description</b></Grid><Grid item xs={12} md={8}>{approval.wfDescription}</Grid>
                 <Grid item xs={12} md={4} ><b>Open Since</b></Grid><Grid item xs={12} md={8}>{new Date(approval.approvalStart).toLocaleString()}</Grid>

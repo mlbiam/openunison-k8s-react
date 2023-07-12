@@ -5,12 +5,15 @@ import Orgs from './Orgs';
 import Links from './Links';
 import OrgInfo from './OrgInfo';
 import { useEffect, useState } from 'react';
+import Alert from '@mui/material/Alert';
 
 export default function FrontPage(props) {
     const [links, setLinks] = React.useState({ "urls": [] })
     const [currentOrg, setCurrentOrg] = React.useState({});
 
     function fetchLinks(node) {
+        setLinks({"urls":props.orgsById[node].links});
+        /*
         fetch("https://k8sou.apps.192-168-2-14.nip.io/scalereact/main/urls/org/" + node)
             .then(response => {
 
@@ -26,7 +29,7 @@ export default function FrontPage(props) {
                 var urls = data;
                 var newLinks = { "urls": urls };
                 setLinks(newLinks);
-            })
+            })*/
     }
 
     function handlePortalOrgClick(event, node) {
@@ -82,7 +85,13 @@ export default function FrontPage(props) {
                     </Grid> : ""}
                 {/* Recent Orders */}
                 <Grid item sm={12}>
-                    <Links links={links} />
+                    { links.urls.length > 0 ? <Links links={links} /> : 
+                    
+                    <Alert severity="info">
+                        <h1>There are no links available, you may need to request access for an application to gain access.</h1>
+                    </Alert>
+                    }
+                    
                 </Grid>
             </Grid>
         </React.Fragment>

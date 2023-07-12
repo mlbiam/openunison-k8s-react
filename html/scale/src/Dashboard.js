@@ -120,6 +120,9 @@ function DashboardContent() {
   const [enableOps,setEnableOps] = React.useState(false);
   const [opsConfig,setOpsConfig] = React.useState({});
 
+  const [orgsForLinks,setOrgsForLinks] = React.useState({});
+  const [orgsForLinksById,setOrgsForLinksById] = React.useState({});
+
   function addWorkflowToCart(wf) {
     var newCart = {...cart}
 
@@ -228,9 +231,73 @@ function DashboardContent() {
             
             loadLeaf(dataOrgs,localOrgsById);
 
+
+
+            // load URLs to sort into orgs
+
+            fetch("https://k8sou.apps.192-168-2-14.nip.io/scalereact/main/urls")
+            .then(
+              response => {
+                return response.json()
+              }
+            ).then(
+              dataLinks => {
+                
+                var linkOrgs = JSON.parse(JSON.stringify(dataOrgs));
+                var linksByOrg = {};
+                dataLinks.map(url => {
+                  if (! linksByOrg[url.org]) {
+                    linksByOrg[url.org] = [];
+                  }
+
+                  linksByOrg[url.org].push(url)
+                })
+
+                function cleanTree(root) {
+                  var toRemove = {};
+                  root.subOrgs.map(childOrg => {
+                    var hasChildren = childOrg.subOrgs.length > 0;
+                    childOrg.links = linksByOrg[childOrg.id];
+                    var hasLinks = childOrg.links && childOrg.links.length > 0;
+                    if (! hasLinks) {
+                      childOrg.links = [];
+                    }
+                    if (!hasChildren &&!hasLinks) {
+                      toRemove[childOrg.id] = childOrg;
+                    } else {
+                      cleanTree(childOrg);
+                    }
+
+
+
+                    
+
+                  }
+                  
+                  );
+                  root.subOrgs = root.subOrgs.filter(subOrg => {return !toRemove[subOrg.id]})
+                }
+
+                cleanTree(linkOrgs);
+
+                linkOrgs.links = linksByOrg[linkOrgs.id];
+                if (! linkOrgs.links) {
+                  linkOrgs.links = [];
+                }
+
+                var localLinkOrgsById = {};
+                loadLeaf(linkOrgs,localLinkOrgsById);
+                console.log(localLinkOrgsById);
+
+                setOrgsForLinks(linkOrgs);
+                setOrgsForLinksById(localLinkOrgsById);
+                setPageName('front-page');
+              }
+            )
+
             setOrgsById(localOrgsById);
             setOrgs(dataOrgs);
-            setPageName('front-page');
+            
           });
 
           if (dataConfig.enableApprovals) {
@@ -322,15 +389,15 @@ function DashboardContent() {
             
          
             
-          { pageName == 'front-page' ? (<FrontPage orgs={orgs} config={config} links={links} title={config.frontPage.title}  orgsById={orgsById}/>) : ("") }
+          { pageName == 'front-page' ? (<FrontPage orgs={orgsForLinks} config={config} links={links} title={config.frontPage.title}  orgsById={orgsForLinksById}/>) : ("") }
           { pageName == 'user' ? (<User config={config} user={user} userObj={userObj} />) : ("") }
           { pageName == 'request-access' ? (<RequestAccess config={config} user={user} userObj={userObj} orgs={orgs} title={"Request Access"} addWorkflowToCart={addWorkflowToCart} removeWorkflowFromCart={removeWorkflowFromCart} cart={cart} orgsById={orgsById} />) : ("") }
           { pageName == 'checkout' ? (<CheckOut cart={cart} config={config} removeWorkflowFromCart={removeWorkflowFromCart} />) : ""}
           { pageName == 'approvals' ? (<Approvals approvals={approvals} setCurrentApproval={setCurrentApproval} chooseScreenHandler={chooseScreenHandler} />) : ""}
-          { pageName == 'current-approval' ? (<Approval currentApproval={currentApproval} loadOpenApprovals={loadOpenApprovals}/> ) : "" }
+          { pageName == 'current-approval' ? (<Approval currentApproval={currentApproval} loadOpenApprovals={loadOpenApprovals} config={config}/> ) : "" }
           { pageName == 'reports' ? (<Reports config={config} user={user} userObj={userObj} orgs={orgs} title={"Reports"}  orgsById={orgsById} setReport={setReport} chooseScreenHandler={chooseScreenHandler} />) : ("") }
           { pageName == 'report' ? (<Report config={config} user={user} userObj={userObj} report={report}  /> ) : ""}
-          { pageName == 'ops' ? (<Ops config={config} user={user} userObj={userObj} opsConfig={opsConfig}  /> ) : ""}
+          { pageName == 'ops' ? (<Ops config={config} user={user} userObj={userObj} opsConfig={opsConfig} orgs={orgs} orgsById={orgsById} /> ) : ""}
 
 
             
