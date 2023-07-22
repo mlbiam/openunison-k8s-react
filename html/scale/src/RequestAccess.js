@@ -7,6 +7,7 @@ import OrgInfo from './OrgInfo';
 import { useEffect, useState } from 'react';
 import AccessWorkflows from './AccessWorkflows';
 import { TextField } from '@mui/material';
+import configData from './config/config.json'
 
 export default function RequestAccess(props) {
     const [workflows, setWorkflows] = React.useState({ wfs: [] })
@@ -15,7 +16,7 @@ export default function RequestAccess(props) {
     const [currentOrg, setCurrentOrg] = React.useState({});
 
     function fetchWorkflows(node) {
-        fetch("https://k8sou.apps.192-168-2-14.nip.io/scalereact/main/workflows/org/" + node)
+        fetch(configData.SERVER_URL + "main/workflows/org/" + node)
             .then(response => {
 
                 if (response.status == 200) {

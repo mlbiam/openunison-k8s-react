@@ -26,6 +26,7 @@ import LinearProgress from '@mui/material/LinearProgress';
 import Alert from '@mui/material/Alert';
 import ListItemText from '@mui/material/ListItemText';
 import List from '@mui/material/List';
+import configData from './config/config.json'
 
 export default function Approval(props) {
     
@@ -84,7 +85,7 @@ export default function Approval(props) {
                 {Object.keys(props.config.attributes).map(attr => {
                     var attribute = props.config.attributes[attr];
                     if (approval.userObj.attribs[attribute.displayName]) {
-                        return <React.Fragment><Grid item xs={12} md={4} ><b>{attribute.displayName}</b></Grid><Grid item xs={12} md={8}>{approval.userObj.attribs[attribute.displayName].values[0]}</Grid></React.Fragment>
+                        return <React.Fragment><Grid item xs={12} md={4} key={attribute.displayName} ><b>{attribute.displayName}</b></Grid><Grid item xs={12} md={8}>{approval.userObj.attribs[attribute.displayName].values[0]}</Grid></React.Fragment>
                     }
                 })}
                 <Grid item xs={12} md={4} ><b>Name</b></Grid><Grid item xs={12} md={8}>{approval.wfLabel}</Grid>
@@ -127,6 +128,7 @@ export default function Approval(props) {
                     <h3>Current Roles</h3>
                     <List>
                         {approval.userObj.groups.map(function (group) {
+                            console.log(group);
                             return (
                                 <ListItemText key={group}>
                                     <Card variant="outlined" >
@@ -183,7 +185,7 @@ export default function Approval(props) {
                             body: JSON.stringify(approvalData)
                         };
 
-                        fetch("https://k8sou.apps.192-168-2-14.nip.io/scalereact/main/approvals/" + approval.approval,requestOptions)
+                        fetch(configData.SERVER_URL + "main/approvals/" + approval.approval,requestOptions)
                         .then(response => {
 
                             if (response.status == 200) {

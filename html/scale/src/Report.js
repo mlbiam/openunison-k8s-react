@@ -35,6 +35,7 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Stack from '@mui/material/Stack';
+import configData from './config/config.json'
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.head}`]: {
@@ -76,7 +77,7 @@ export default function Report(props) {
                     body: JSON.stringify(props.report)
                 };
 
-                fetch("https://k8sou.apps.192-168-2-14.nip.io/scalereact/main/reports/excelx",requestOptions)
+                fetch(configData.SERVER_URL + "main/reports/excelx",requestOptions)
                 .then((response) => {
                     return response.blob();
                 })

@@ -24,6 +24,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import LinearProgress from '@mui/material/LinearProgress';
 import Alert from '@mui/material/Alert';
+import configData from './config/config.json'
 
 export default function Approvals(props) {
 
@@ -49,7 +50,7 @@ export default function Approvals(props) {
                 >
                     {props.approvals.open.map(function (approval) {
 
-
+                        
 
                         return (<Grid item xs={12} key={approval.approval} sx={{ mt: 4, mb: 4 }}>
                             <Card variant="outlined" style={{ display: 'flex', justifyContent: 'space-between', flexDirection: 'column', height: "100%" }}>
@@ -88,7 +89,7 @@ export default function Approvals(props) {
                                 <CardActions>
                                     <Button variant="contained" onClick={(event) => {
 
-                                        fetch("https://k8sou.apps.192-168-2-14.nip.io/scalereact/main/approvals/" + approval.approval)
+                                        fetch(configData.SERVER_URL + "main/approvals/" + approval.approval)
                                             .then(response => {
                                                 return response.json();
                                             })

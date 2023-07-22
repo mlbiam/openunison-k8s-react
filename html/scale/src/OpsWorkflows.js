@@ -27,7 +27,7 @@ import RadioGroup from '@mui/material/RadioGroup';
 import { TextField } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
 import OpsWorkflow from './OpsWorkflow';
-
+import configData from './config/config.json'
 
 export default function OpsWorkflows(props) {
     const [forceRedraw, setFoceRedraw] = React.useState(Math.random);

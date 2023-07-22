@@ -1,6 +1,7 @@
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import Typography from '@mui/material/Typography';
+import configData from './config/config.json'
 
 function Title(props) {
   return (

@@ -30,12 +30,27 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
+import OpsWorkflow from './OpsWorkflow';
+import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
+import configData from './config/config.json'
 
 export default function CheckOut(props) {
     const [forceRedraw, setFoceRedraw] = React.useState(Math.random);
     const [showSubmitDialog, setShowSubmitDialog] = React.useState(false);
     const [submitRequestErrors, setSubmitRequestErrors] = React.useState([]);
     const [submitRequestSuccess, setSubmitRequestSuccess] = React.useState([]);
+
+    function setWorkflow(wf) {
+        var lwf = {...wf};
+        props.replaceWorkflowInCart(wf);
+
+    }
+
+    function removeWorkflowButton(wf) {
+        return <Button variant="contained" onClick={(event) => {
+            props.removeWorkflowFromCart(wf);
+        }} >Remove from Cart</Button>
+    }
 
     return (
         <React.Fragment>
@@ -102,87 +117,10 @@ export default function CheckOut(props) {
                             wf.reason = "";
                         }
 
-                        return (<Grid item xs={12} key={wf.uuid} sx={{ mt: 4, mb: 4 }}>
-                            <Card variant="outlined" style={{ display: 'flex', justifyContent: 'space-between', flexDirection: 'column', height: "100%" }}>
-                                <CardHeader title={wf.label}></CardHeader>
-                                <CardContent >
-
-                                    <Typography variant="body1">
-                                        {wf.description}
-                                    </Typography>
-                                    {(props.config.requireReasons && !props.config.reasonIsList ? <TextField label="Reason for request" fullWidth margin="normal" onChange={(event) => { wf.reason = event.target.value; }} /> : "")}
-                                    {(props.config.requireReasons && props.config.reasonIsList ?
-                                        <FormControl fullWidth>
-                                            <InputLabel id="demo-simple-select-label">Reason for request</InputLabel>
-                                            <Select
-                                                labelId="demo-simple-select-label"
-                                                id="demo-simple-select"
-
-                                                label="Reason for request"
-
-                                            >
-                                                {
-
-                                                    props.config.reasons.map(function (reason) {
-
-                                                        return <MenuItem value={reason}>{reason}</MenuItem>
-                                                    })
-                                                }
-
-                                            </Select>
-                                        </FormControl>
-
-                                        : "")}
-                                    {(wf.canDelegate) ?
-                                        <Stack>
-                                            <FormControlLabel control={<Checkbox checked={wf.delegate} onClick={event => { wf.delegate = event.target.checked; setFoceRedraw(Math.random()) }} />} label="Request For Someone Else" />
-                                            {(wf.delegate) ?
-                                                <TextField
-
-                                                    label={"Requesting for - List each " + props.config.uidAttributeName}
-                                                    multiline
-                                                    rows={10}
-                                                    defaultValue={wf.subject}
-                                                    onChange={event => { wf.subject = event.target.value; setFoceRedraw(Math.random()) }}
-                                                />
-                                                : ""}
-
-                                            {(wf.delegate && wf.canPreApprove) ?
-                                                <FormControlLabel control={<Checkbox checked={wf.tryPreApprove} onClick={event => { wf.tryPreApprove = event.target.checked; setFoceRedraw(Math.random()) }} />} label="Attempt Pre-approval?" />
-                                                : ""}
-
-                                            {(wf.delegate && wf.canPreApprove && wf.tryPreApprove) ?
-                                                <RadioGroup
-                                                    defaultValue={wf.approved}                                                >
-                                                    <FormControlLabel value="true" control={<Radio onClick={event => { wf.approved = "true" ; setFoceRedraw(Math.random())}} />} label="Approved" />
-                                                    <FormControlLabel value="false" control={<Radio onClick={event => { wf.approved = "false" ; setFoceRedraw(Math.random())}} />} label="Denied" />
-                                                </RadioGroup>
-                                                : ""}
-
-                                            {(wf.delegate && wf.canPreApprove && wf.tryPreApprove) ?
-                                                <TextField
-
-                                                label={"Reason for " + (wf.approved == "true" ? "approval" : "denial")}
-                                              
-                                                defaultValue={wf.approvalReason}
-                                                onChange={event => { wf.approvalReason = event.target.value; setFoceRedraw(Math.random()) }}
-                                            />
-                                                : ""}
-
-                                        </Stack>
-                                        : ""}
-
-
-                                </CardContent>
-                                <CardActions>
-                                    <Button variant="contained" onClick={(event) => {
-                                        props.removeWorkflowFromCart(wf);
-                                    }} >Remove from Cart</Button>
-
-
-                                </CardActions>
-                            </Card>
-                        </Grid>);
+                        return (
+                            <Grid item xs={12} key={wf.uuid} sx={{ mt: 4, mb: 4 }}>
+                                <OpsWorkflow  wf={wf} config={props.config} setShowSubmitDialog={setShowSubmitDialog} setWorkflow={setWorkflow} submitRequestSuccess={submitRequestSuccess} submitRequestErrors={submitRequestErrors} wfButton={removeWorkflowButton} />
+                            </Grid>);
 
 
 
@@ -191,7 +129,7 @@ export default function CheckOut(props) {
 
                     })};
                 </Grid>
-                <Button onClick={(event) => {
+                <Button variant="contained" size="large" onClick={(event) => {
                     // show dialog
                     setShowSubmitDialog(true);
 
@@ -207,6 +145,19 @@ export default function CheckOut(props) {
                             wfrequest.encryptedParams = wf.encryptedParams;
 
 
+
+                            if (wf.delegate && wf.subject) {
+                                wfrequest.subjects = wf.subject.split("\n");
+                            }
+
+                            if (wf.tryPreApprove) {
+                                wfrequest.doPreApproval = true;
+                                wfrequest.approved = (wf.approved ? "true" : "false");
+                                wfrequest.approvalReason = wf.approvalReason;
+                            }
+
+
+
                             wfRequests.push(wfrequest);
                         }
                     );
@@ -218,7 +169,7 @@ export default function CheckOut(props) {
                         body: JSON.stringify(wfRequests)
                     };
 
-                    fetch("https://k8sou.apps.192-168-2-14.nip.io/scalereact/main/workflows", requestOptions)
+                    fetch(configData.SERVER_URL + "main/workflows", requestOptions)
                         .then(response => response.json())
                         .then(data => {
                             var wfSuccess = [];
@@ -241,7 +192,7 @@ export default function CheckOut(props) {
                             setSubmitRequestErrors(wfError);
                             setShowSubmitDialog(false);
                         });
-                }}>Submit Your Requests</Button>
+                }} startIcon={<ConfirmationNumberIcon />}>Submit Your Requests</Button>
             </Grid>
 
         </React.Fragment>

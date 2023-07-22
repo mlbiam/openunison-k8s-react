@@ -18,6 +18,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Button from '@mui/material/Button';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import configData from './config/config.json'
 
 export default function NavList(props) {
 

@@ -6,6 +6,7 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import Title from './Title'
 import { Typography } from '@mui/material';
 import {useEffect, useState} from 'react';
+import configData from './config/config.json'
 
 export default function Orgs(props) {
 

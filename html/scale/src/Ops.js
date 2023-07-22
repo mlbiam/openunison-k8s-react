@@ -48,7 +48,7 @@ import Alert from '@mui/material/Alert';
 import { Checkbox } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
-
+import configData from './config/config.json'
 
 export default function Ops(props) {
     const [showSubmitDialog, setShowSubmitDialog] = React.useState(false);
@@ -112,7 +112,7 @@ export default function Ops(props) {
     }));
 
     function fetchWorkflows(node) {
-        fetch("https://k8sou.apps.192-168-2-14.nip.io/scalereact/main/workflows/org/" + node)
+        fetch(configData.SERVER_URL + "main/workflows/org/" + node)
             .then(response => {
 
                 if (response.status == 200) {
@@ -128,7 +128,7 @@ export default function Ops(props) {
                 
                 
                 wfs.map(wf => {
-                    fetch("https://k8sou.apps.192-168-2-14.nip.io/scalereact/main/workflows/candelegate?workflowName=" + wf.name + "&uuid=" + wf.uuid)
+                    fetch(configData.SERVER_URL + "main/workflows/candelegate?workflowName=" + wf.name + "&uuid=" + wf.uuid)
                     
                         .then(response => {
                         return response.json();
@@ -249,7 +249,7 @@ export default function Ops(props) {
                         body: JSON.stringify(newAttributes)
                     };
 
-                    fetch("https://k8sou.apps.192-168-2-14.nip.io/scalereact/ops/user", requestOptions)
+                    fetch(configData.SERVER_URL + "ops/user", requestOptions)
                         .then(response => {
                             if (response.status == 200) {
                                 setSubmitRequestSuccess(true);
@@ -403,7 +403,7 @@ export default function Ops(props) {
                         body: JSON.stringify(searchAttrs)
                     };
 
-                    fetch("https://k8sou.apps.192-168-2-14.nip.io/scalereact/ops/search", requestOptions)
+                    fetch(configData.SERVER_URL + "ops/search", requestOptions)
                         .then(response => response.json())
                         .then(data => {
                             setSearchResults(data);
@@ -441,7 +441,7 @@ export default function Ops(props) {
                                         {props.opsConfig.resultsAttributes.map(attrCfg => {
                                             return <StyledTableCell key={attrCfg.name}>
                                                 <Link href="#" onClick={event => {
-                                                    fetch("https://k8sou.apps.192-168-2-14.nip.io/scalereact/ops/user?dn=" + encodeURIComponent(row.dn))
+                                                    fetch(configData.SERVER_URL + "ops/user?dn=" + encodeURIComponent(row.dn))
                                                         .then(response => response.json())
                                                         .then(data => {
                                                             setCurrentUser({ ...data });
@@ -503,7 +503,7 @@ export default function Ops(props) {
                                             {props.opsConfig.resultsAttributes.map(attrCfg => {
                                                 return <StyledTableCell key={attrCfg.name}>
                                                     <Link href="#" onClick={event => {
-                                                        fetch("https://k8sou.apps.192-168-2-14.nip.io/scalereact/ops/user?dn=" + encodeURIComponent(row.dn))
+                                                        fetch(configData.SERVER_URL + "ops/user?dn=" + encodeURIComponent(row.dn))
                                                             .then(response => response.json())
                                                             .then(data => {
                                                                 setCurrentUser({ ...data });

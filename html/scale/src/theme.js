@@ -1,5 +1,6 @@
 import { red } from '@mui/material/colors';
 import { createTheme } from '@mui/material/styles';
+import configData from './config/config.json'
 
 // A custom theme for this app
 const theme = createTheme({

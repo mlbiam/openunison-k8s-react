@@ -1,6 +1,7 @@
 import * as React from 'react';
 import Title from './Title'
 import { Typography } from '@mui/material';
+import configData from './config/config.json'
 
 export default function OrgInfo(props) {
   return (

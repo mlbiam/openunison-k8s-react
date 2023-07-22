@@ -28,6 +28,7 @@ import Stack from '@mui/material/Stack';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import configData from './config/config.json'
 
 export default function ReportsList(props) {
     const [showSubmitDialog,setShowSubmitDialog] = React.useState(false);
@@ -62,7 +63,7 @@ export default function ReportsList(props) {
 
     function loadReport(report) {
         setShowSubmitDialog(true);
-        var url = "https://k8sou.apps.192-168-2-14.nip.io/scalereact/main/reports/" + report.name;
+        var url = configData.SERVER_URL + "main/reports/" + report.name;
         var params = '';
 
         if (report.parameters.indexOf("beginDate") >= 0) {

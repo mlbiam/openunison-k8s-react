@@ -33,7 +33,7 @@ import LinearProgress from '@mui/material/LinearProgress';
 import Dialog from '@mui/material/Dialog';
 
 import Alert from '@mui/material/Alert';
-
+import configData from './config/config.json'
 
 
 export default function User(props) {
@@ -114,7 +114,7 @@ export default function User(props) {
                         body: JSON.stringify(newAttributes)
                     };
 
-                    fetch("https://k8sou.apps.192-168-2-14.nip.io/scalereact/main/user",requestOptions)
+                    fetch(configData.SERVER_URL + "main/user",requestOptions)
                         .then(response => {
                             if (response.status == 200) {
                                 setSubmitRequestSuccess(true);

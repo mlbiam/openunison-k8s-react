@@ -6,6 +6,7 @@ import Links from './Links';
 import OrgInfo from './OrgInfo';
 import { useEffect, useState } from 'react';
 import Alert from '@mui/material/Alert';
+import configData from './config/config.json'
 
 export default function FrontPage(props) {
     const [links, setLinks] = React.useState({ "urls": [] })
@@ -14,7 +15,7 @@ export default function FrontPage(props) {
     function fetchLinks(node) {
         setLinks({"urls":props.orgsById[node].links});
         /*
-        fetch("https://k8sou.apps.192-168-2-14.nip.io/scalereact/main/urls/org/" + node)
+        fetch(configData.SERVER_URL + "main/urls/org/" + node)
             .then(response => {
 
                 if (response.status == 200) {

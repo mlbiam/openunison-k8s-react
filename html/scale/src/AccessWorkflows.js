@@ -8,7 +8,7 @@ import Link from '@mui/material/Link';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import { CardActionArea, CardHeader } from '@mui/material';
-
+import configData from './config/config.json'
 
 
 export default function AccessWorkflows(props) {

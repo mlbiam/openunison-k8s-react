@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react';
 import AccessWorkflows from './AccessWorkflows';
 import { TextField } from '@mui/material';
 import ReportsList from './ReportsList';
+import configData from './config/config.json'
 
 export default function Reports(props) {
     const [reports,setReports] = React.useState({"reports":[]})
@@ -15,7 +16,7 @@ export default function Reports(props) {
 
 
     function setReportsList(node) {
-        fetch("https://k8sou.apps.192-168-2-14.nip.io/scalereact/main/reports/org/" + node)
+        fetch(configData.SERVER_URL + "main/reports/org/" + node)
             .then(response => {
 
                 if (response.status == 200) {

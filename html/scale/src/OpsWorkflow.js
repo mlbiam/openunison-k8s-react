@@ -26,14 +26,21 @@ import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 import { TextField } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
-
+import configData from './config/config.json'
 
 export default function OpsWorkflow(props) {
     const [forceRedraw, setFoceRedraw] = React.useState(Math.random);
     
     const [submitRequestErrors, setSubmitRequestErrors] = React.useState([]);
     const [submitRequestSuccess, setSubmitRequestSuccess] = React.useState([]);
-    const [localWf,setLocalWf] = React.useState({...props.wf,"approved":false,"tryPreApprove":false})
+    const [localWf,setLocalWf] = React.useState({...props.wf,"approved":false,"tryPreApprove":false,"delegate":false})
+
+    function updateWorkflow(wf) {
+        setLocalWf(wf);
+        if (props.setWorkflow) {
+            props.setWorkflow(wf);
+        }
+    }
 
     return (
         
@@ -73,7 +80,7 @@ export default function OpsWorkflow(props) {
                                     <Typography variant="body1">
                                         {localWf.description}
                                     </Typography>
-                                    {(props.config.requireReasons && !props.config.reasonIsList ? <TextField label="Reason for request" fullWidth margin="normal" onChange={(event) => {  var nwf = {...localWf};  nwf.reason = event.target.value; setLocalWf(nwf)}} /> : "")}
+                                    {(props.config.requireReasons && !props.config.reasonIsList ? <TextField label="Reason for request" fullWidth margin="normal" onChange={(event) => {  var nwf = {...localWf};  nwf.reason = event.target.value; updateWorkflow(nwf)}} /> : "")}
                                     {(props.config.requireReasons && props.config.reasonIsList ?
                                         <FormControl fullWidth>
                                             <InputLabel id="demo-simple-select-label">Reason for request</InputLabel>
@@ -99,18 +106,29 @@ export default function OpsWorkflow(props) {
                                         </FormControl>
 
                                         : "")}
+                                        {! props.cart && localWf.canDelegate ? <React.Fragment>
+                                        
+                                        <FormControlLabel control={<Checkbox checked={localWf.delegate} value={localWf.delegate} onClick={event => {  var nwf={...localWf};  nwf.delegate = event.target.checked; updateWorkflow(nwf) }} />} label="Request For Someone Else" />
+                                        {(localWf.delegate) ?
+                                                <TextField
 
-
+                                                    label={"Requesting for - List each " + props.config.uidAttributeName}
+                                                    multiline
+                                                    rows={10}
+                                                    defaultValue={localWf.subject}
+                                                    onChange={event => { var nwf={...localWf};nwf.subject = event.target.value; updateWorkflow(nwf) }}
+                                                />
+                                                : ""}</React.Fragment> : "" }
 
                                     {(localWf.canPreApprove) ?
-                                        <FormControlLabel control={<Checkbox checked={localWf.tryPreApprove} value={localWf.tryPreApprove} onClick={event => {  var nwf = {...localWf};  nwf.tryPreApprove = event.target.checked; setLocalWf(nwf); }} />} label="Attempt Pre-approval?" />
+                                        <FormControlLabel control={<Checkbox checked={localWf.tryPreApprove} value={localWf.tryPreApprove} onClick={event => {  var nwf = {...localWf};  nwf.tryPreApprove = event.target.checked; updateWorkflow(nwf); }} />} label="Attempt Pre-approval?" />
                                         : ""}
 
                                     {(localWf.canPreApprove && localWf.tryPreApprove) ?
                                         <RadioGroup
                                             value={localWf.approved}     
                                             onChange={event => {
-                                                var nwf = {...localWf};  nwf.approved = event.target.value;setLocalWf(nwf);
+                                                var nwf = {...localWf};  nwf.approved = event.target.value;updateWorkflow(nwf);
                                             }}
                                             >
                                             <FormControlLabel value={true} control={<Radio value={true} />} label="Approved" />
@@ -124,10 +142,10 @@ export default function OpsWorkflow(props) {
                                             label={"Reason for " + (localWf.approved == "true" ? "approval" : "denial")}
 
                                             defaultValue={localWf.approvalReason}
-                                            onChange={event => { var nwf = {...localWf};  nwf.approvalReason = event.target.value; setLocalWf(nwf) }}
+                                            onChange={event => { var nwf = {...localWf};  nwf.approvalReason = event.target.value; updateWorkflow(nwf) }}
                                         />
                                         : ""}
-
+                                    { props.wfButton ? props.wfButton(localWf) : 
                                     <Button onClick={(event) => {
                                         // show dialog
                                         props.setShowSubmitDialog(true);
@@ -143,7 +161,12 @@ export default function OpsWorkflow(props) {
 
                                         Object.keys(props.cart).map((resultDN) => {
                                             var row = props.cart[resultDN];
-                                            wfrequest.subjects.push(row[props.config.uidAttributeName]);
+
+                                            
+                                                wfrequest.subjects.push(row[props.config.uidAttributeName]);
+                                            
+
+                                            
                                         });
 
                                         if (localWf.tryPreApprove) {
@@ -162,7 +185,7 @@ export default function OpsWorkflow(props) {
                                             body: JSON.stringify(wfRequests)
                                         };
 
-                                        fetch("https://k8sou.apps.192-168-2-14.nip.io/scalereact/main/workflows", requestOptions)
+                                        fetch(configData.SERVER_URL + "main/workflows", requestOptions)
                                             .then(response => response.json())
                                             .then(data => {
                                                 var wfSuccess = [];
@@ -180,12 +203,19 @@ export default function OpsWorkflow(props) {
 
 
                                         
+                                                if (props.setSubmitRequestSuccess) {
+                                                    props.setSubmitRequestSuccess(wfSuccess);
+                                                    props.setSubmitRequestErrors(wfError);
+                                                } else {
+                                                    setSubmitRequestSuccess(wfSuccess);
+                                                    setSubmitRequestErrors(wfError);
+                                                }
 
-                                                setSubmitRequestSuccess(wfSuccess);
-                                                setSubmitRequestErrors(wfError);
+
+                                                
                                                 props.setShowSubmitDialog(false);
                                             });
-                                    }} disabled={(localWf.tryPreApprove &&  (! localWf.approvalReason || localWf.approvalReason == ""))}>Submit Your Requests</Button>
+                                    }} disabled={(localWf.tryPreApprove &&  (! localWf.approvalReason || localWf.approvalReason == ""))}>Submit Your Requests</Button> }
                                 </Stack>
 
 
