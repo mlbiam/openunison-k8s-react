@@ -55,7 +55,8 @@ jobs:
         
         with:
           push: true
-          context: "{{defaultContext}}"
+          context: "."
+          dockerFile: "./DockerFile"
           tags: |
             docker.io/${{ secrets.OU_CONTAINER_REPO }}/openunison-k8s-react:${{ env.TAG }}
             docker.io/${{ secrets.OU_CONTAINER_REPO }}/openunison-k8s-react:${{ env.SHORT_TAG }}
