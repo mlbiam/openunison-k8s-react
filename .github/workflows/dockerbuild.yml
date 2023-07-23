@@ -21,7 +21,7 @@ jobs:
         uses: actions/setup-node@v2
 
       - name: build
-        run: ./build.sh
+        run: ./build.sh; pwd; ls
 
       - name: generate tag
         run: |-
