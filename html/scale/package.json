@@ -1,6 +1,7 @@
 {
   "name": "material-cra",
   "version": "5.0.0",
+  "homepage": "./",
   "private": true,
   "scripts": {
     "start": "react-scripts start",
