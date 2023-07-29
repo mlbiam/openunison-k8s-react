@@ -96,5 +96,5 @@ export default function FrontPage(props) {
                 </Grid>
             </Grid>
         </React.Fragment>
-    );
+    )
 }
