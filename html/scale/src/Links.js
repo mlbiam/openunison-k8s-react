@@ -42,7 +42,7 @@ export default function Links(props) {
                             </Card>
                         </Grid>
                     )
-                })};
+                })}
             </Grid>
         </React.Fragment>
     );

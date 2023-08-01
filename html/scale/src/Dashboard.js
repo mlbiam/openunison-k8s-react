@@ -317,6 +317,9 @@ function DashboardContent() {
 
   useEffect(() => {
     fetchData()
+    const interval = setInterval(() => {
+      console.log("its been a second");
+    },1000);
   }, [])
 
 
