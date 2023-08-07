@@ -21,8 +21,8 @@ import theme from './theme';
 import FrontPage from './FrontPage';
 import RequestAccess from './RequestAccess.js';
 import User from './User'
-import {useEffect, useState} from 'react';
-import {loadAttributes } from './tools/biz.js'
+import { useEffect, useState, useReducer, useRef } from 'react';
+import { loadAttributes } from './tools/biz.js'
 import CheckOut from './CheckOut.js';
 import Approvals from './Approvals.js';
 import Approval from './Approval.js';
@@ -30,6 +30,34 @@ import Reports from './Reports.js';
 import Report from './Report.js';
 import Ops from './Ops.js';
 import configData from './config/config.json'
+import Button from '@mui/material/Button';
+
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import LinearProgress from '@mui/material/LinearProgress';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+
+function useInterval(callback, delay) {
+  const savedCallback = useRef();
+
+  // Remember the latest callback.
+  useEffect(() => {
+    savedCallback.current = callback;
+  }, [callback]);
+
+  // Set up the interval.
+  useEffect(() => {
+    function tick() {
+      savedCallback.current();
+    }
+    if (delay !== null) {
+      let id = setInterval(tick, delay);
+      return () => clearInterval(id);
+    }
+  }, [delay]);
+}
 
 function Copyright(props) {
   return (
@@ -44,6 +72,9 @@ function Copyright(props) {
   );
 }
 
+const reducer = (state) => {
+  console.log(state);
+}
 
 
 const drawerWidth = 240;
@@ -96,6 +127,8 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 
 const mdTheme = createTheme();
 
+
+
 function DashboardContent() {
   const [open, setOpen] = React.useState(true);
   const toggleDrawer = () => {
@@ -108,68 +141,87 @@ function DashboardContent() {
     setPageName(screenName);
   }
 
-  const [config,setConfig] = React.useState({}  );
-  const [user,setUser] = React.useState({});
-  const [userObj,setUserObj] = React.useState({"currentGroups":[],"attributes":{}})
-  const [orgs,setOrgs] = React.useState({});
-  const [links,setLinks] = React.useState({"urls":[]})
-  const [cart,setCart] = React.useState({})
-  const [orgsById,setOrgsById] = React.useState({})
-  const [approvals,setApprovals] = React.useState({"open":[]});
-  const [currentApproval,setCurrentApproval] = React.useState({});
-  const [report,setReport] = React.useState({});
-  const [enableOps,setEnableOps] = React.useState(false);
-  const [opsConfig,setOpsConfig] = React.useState({});
+  const [config, setConfig] = React.useState({});
+  const [user, setUser] = React.useState({});
+  const [userObj, setUserObj] = React.useState({ "currentGroups": [], "attributes": {} })
+  const [orgs, setOrgs] = React.useState({});
+  const [links, setLinks] = React.useState({ "urls": [] })
+  const [cart, setCart] = React.useState({})
+  const [orgsById, setOrgsById] = React.useState({})
+  const [approvals, setApprovals] = React.useState({ "open": [] });
+  const [currentApproval, setCurrentApproval] = React.useState({});
+  const [report, setReport] = React.useState({});
+  const [enableOps, setEnableOps] = React.useState(false);
+  const [opsConfig, setOpsConfig] = React.useState({});
 
-  const [orgsForLinks,setOrgsForLinks] = React.useState({});
-  const [orgsForLinksById,setOrgsForLinksById] = React.useState({});
+  const [orgsForLinks, setOrgsForLinks] = React.useState({});
+  const [orgsForLinksById, setOrgsForLinksById] = React.useState({});
+
+
+  const [dialogTitle, setDialogTitle] = React.useState("Loading");
+  const [dialogText, setDialogText] = React.useState("Connecting to OpenUnison");
+  const [dialogButtonLabel,setDialogButtonLabel] = React.useState("OK");
+  const [dialogButtonFunction,setDialogButtonFunction] = React.useState(function() {});
+  const [showDialog, setShowDialog] = React.useState(true);
+  const [showDialogButton, setShowDialogButton] = React.useState(false);
+
 
   function addWorkflowToCart(wf) {
-    var newCart = {...cart}
+    var newCart = { ...cart }
 
     fetch(configData.SERVER_URL + "main/workflows/candelegate?workflowName=" + wf.name + "&uuid=" + wf.uuid)
-    .then(response => {
-      return response.json();
-    })
-    .then(json => {
-      wf.canPreApprove = json.canPreApprove;
-      wf.canDelegate = json.canDelegate;
-      newCart[wf.uuid] = wf;
-      setCart(newCart);
-    })
+      .then(response => {
+        return response.json();
+      })
+      .then(json => {
+        wf.canPreApprove = json.canPreApprove;
+        wf.canDelegate = json.canDelegate;
+        newCart[wf.uuid] = wf;
+        setCart(newCart);
+      })
 
-    
+
 
   }
 
   function removeWorkflowFromCart(wf) {
-    var newCart = {...cart}
+    var newCart = { ...cart }
     delete newCart[wf.uuid];
     setCart(newCart);
   }
 
   function replaceWorkflowInCart(wf) {
-    var newCart = {...cart}
+    var newCart = { ...cart }
     newCart[wf.uuid] = wf;
     setCart(newCart);
   }
 
   function loadOpenApprovals() {
     fetch(configData.SERVER_URL + "main/approvals")
-              .then(response => {
-                return response.json();
-              })
-              .then(dataApprovals => {
-                var newApprovals = {};
-                newApprovals["open"] = dataApprovals.approvals.sort(
-                  (a,b) => {
-                    return (a.approvalStart - b.approvalStart);
-                  }
-                );
+      .then(response => {
+        return response.json();
+      })
+      .then(dataApprovals => {
+        var newApprovals = {};
+        newApprovals["open"] = dataApprovals.approvals.sort(
+          (a, b) => {
+            return (a.approvalStart - b.approvalStart);
+          }
+        );
 
-                setApprovals(newApprovals);
-              }); 
+        setApprovals(newApprovals);
+      });
   }
+
+  function extendSession() {
+    fetch(configData.SERVER_URL + "main/config")
+      .then(response => {
+        if (! response.ok) {
+          window.location = configData.SERVER_URL;
+        } 
+      })
+  }
+
 
   const fetchData = () => {
 
@@ -196,138 +248,203 @@ function DashboardContent() {
       .then(dataConfig => {
         setConfig(dataConfig);
         fetch(configData.SERVER_URL + "main/user")
-        .then(response => {
-          return response.json()
-        })
-        .then(data => {
-          setUser(data);
-          var localUserObj = {"currentGroups":[],"attributes":{}};
-          loadAttributes(localUserObj,data,dataConfig);   
-          setUserObj(localUserObj);
-
-          if (! dataConfig.showPortalOrgs) {
-            fetch(configData.SERVER_URL + "main/urls")
-            .then(
-              response => {
-                return response.json()
-              }
-            ).then(
-              dataLinks => {
-                setLinks({"urls":dataLinks});
-              }
-            )
-          }
-
-
-          fetch(configData.SERVER_URL + "main/orgs")
           .then(response => {
             return response.json()
           })
-          .then(dataOrgs => {
+          .then(data => {
+            setUser(data);
+            var localUserObj = { "currentGroups": [], "attributes": {} };
+            loadAttributes(localUserObj, data, dataConfig);
+            setUserObj(localUserObj);
 
-
-            function loadLeaf(root,llocalOrgsById) {
-              llocalOrgsById[root.id] = root;
-              for (var i=0;i<root.subOrgs.length;i++) {
-                loadLeaf(root.subOrgs[i],llocalOrgsById);
-              }
+            if (!dataConfig.showPortalOrgs) {
+              fetch(configData.SERVER_URL + "main/urls")
+                .then(
+                  response => {
+                    return response.json()
+                  }
+                ).then(
+                  dataLinks => {
+                    setLinks({ "urls": dataLinks });
+                  }
+                )
             }
 
-            console.log(dataOrgs)
-            var localOrgsById = {};
-            
-            loadLeaf(dataOrgs,localOrgsById);
 
-
-
-            // load URLs to sort into orgs
-
-            fetch(configData.SERVER_URL + "main/urls")
-            .then(
-              response => {
+            fetch(configData.SERVER_URL + "main/orgs")
+              .then(response => {
                 return response.json()
-              }
-            ).then(
-              dataLinks => {
-                
-                var linkOrgs = JSON.parse(JSON.stringify(dataOrgs));
-                var linksByOrg = {};
-                dataLinks.map(url => {
-                  if (! linksByOrg[url.org]) {
-                    linksByOrg[url.org] = [];
+              })
+              .then(dataOrgs => {
+
+
+                function loadLeaf(root, llocalOrgsById) {
+                  llocalOrgsById[root.id] = root;
+                  for (var i = 0; i < root.subOrgs.length; i++) {
+                    loadLeaf(root.subOrgs[i], llocalOrgsById);
                   }
-
-                  linksByOrg[url.org].push(url)
-                })
-
-                function cleanTree(root) {
-                  var toRemove = {};
-                  root.subOrgs.map(childOrg => {
-                    var hasChildren = childOrg.subOrgs.length > 0;
-                    childOrg.links = linksByOrg[childOrg.id];
-                    var hasLinks = childOrg.links && childOrg.links.length > 0;
-                    if (! hasLinks) {
-                      childOrg.links = [];
-                    }
-                    if (!hasChildren &&!hasLinks) {
-                      toRemove[childOrg.id] = childOrg;
-                    } else {
-                      cleanTree(childOrg);
-                    }
-
-
-
-                    
-
-                  }
-                  
-                  );
-                  root.subOrgs = root.subOrgs.filter(subOrg => {return !toRemove[subOrg.id]})
                 }
 
-                cleanTree(linkOrgs);
+                console.log(dataOrgs)
+                var localOrgsById = {};
 
-                linkOrgs.links = linksByOrg[linkOrgs.id];
-                if (! linkOrgs.links) {
-                  linkOrgs.links = [];
-                }
+                loadLeaf(dataOrgs, localOrgsById);
 
-                var localLinkOrgsById = {};
-                loadLeaf(linkOrgs,localLinkOrgsById);
-                console.log(localLinkOrgsById);
 
-                setOrgsForLinks(linkOrgs);
-                setOrgsForLinksById(localLinkOrgsById);
-                setPageName('front-page');
-              }
-            )
 
-            setOrgsById(localOrgsById);
-            setOrgs(dataOrgs);
-            
-          });
+                // load URLs to sort into orgs
 
-          if (dataConfig.enableApprovals) {
-            loadOpenApprovals();
-          }
+                fetch(configData.SERVER_URL + "main/urls")
+                  .then(
+                    response => {
+                      return response.json()
+                    }
+                  ).then(
+                    dataLinks => {
 
-        }) 
+                      var linkOrgs = JSON.parse(JSON.stringify(dataOrgs));
+                      var linksByOrg = {};
+                      dataLinks.map(url => {
+                        if (!linksByOrg[url.org]) {
+                          linksByOrg[url.org] = [];
+                        }
+
+                        linksByOrg[url.org].push(url)
+                      })
+
+                      function cleanTree(root) {
+                        var toRemove = {};
+                        root.subOrgs.map(childOrg => {
+                          var hasChildren = childOrg.subOrgs.length > 0;
+                          childOrg.links = linksByOrg[childOrg.id];
+                          var hasLinks = childOrg.links && childOrg.links.length > 0;
+                          if (!hasLinks) {
+                            childOrg.links = [];
+                          }
+                          if (!hasChildren && !hasLinks) {
+                            toRemove[childOrg.id] = childOrg;
+                          } else {
+                            cleanTree(childOrg);
+                          }
+
+
+
+
+
+                        }
+
+                        );
+                        root.subOrgs = root.subOrgs.filter(subOrg => { return !toRemove[subOrg.id] })
+                      }
+
+                      cleanTree(linkOrgs);
+
+                      linkOrgs.links = linksByOrg[linkOrgs.id];
+                      if (!linkOrgs.links) {
+                        linkOrgs.links = [];
+                      }
+
+                      var localLinkOrgsById = {};
+                      loadLeaf(linkOrgs, localLinkOrgsById);
+                      console.log(localLinkOrgsById);
+
+                      setOrgsForLinks(linkOrgs);
+                      setOrgsForLinksById(localLinkOrgsById);
+                      setPageName('front-page');
+                      setShowDialog(false);
+                    }
+                  )
+
+                setOrgsById(localOrgsById);
+                setOrgs(dataOrgs);
+
+              });
+
+            if (dataConfig.enableApprovals) {
+              loadOpenApprovals();
+            }
+
+          })
       })
   }
 
+
+
+  useInterval(() => {
+
+
+    
+
+    fetch(configData.SERVER_URL + "sessioncheck")
+      .then(response => {
+        if (response.status == 200) {
+          return response.json();
+        } else {
+          return Promise.resolve({ "minsLeft": 0 });
+        }
+      })
+      .then(data => {
+        
+        if (pageName != 'loading') {
+          
+          if (data.minsLeft <= 0) {
+            // need to refresh
+            // warn the user
+            setDialogTitle("Session Timeout");
+            setDialogText("Your session has timed out, hit OK to log back in");
+            
+            setShowDialog(true);
+            setShowDialogButton(true);
+          } else if (data.minsLeft < config.warnMinutesLeft) {
+            
+            // warn the user
+            setDialogTitle("Session Timeout Warning");
+            setDialogText("Warning, your session will timeout in " + data.minsLeft + " minutes, hit OK to continue your session");
+            
+            setShowDialog(true);
+            setShowDialogButton(true);
+          } else {
+            setShowDialog(false);
+            setShowDialogButton(false);
+          }
+        }
+      })
+
+  }, 60000);
+
   useEffect(() => {
-    fetchData()
-    const interval = setInterval(() => {
-      console.log("its been a second");
-    },1000);
+    fetchData();
   }, [])
 
 
-  
+
 
 
   return (
     <ThemeProvider theme={theme}>
+      <Dialog
+        open={showDialog}
+
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">{dialogTitle}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            {dialogText}
+            <LinearProgress />
+          </DialogContentText>
+        </DialogContent>
+        {showDialogButton ?
+          <DialogActions>
+
+            <Button onClick={(event) => {
+              extendSession();
+            }} autoFocus>
+              { dialogButtonLabel }
+            </Button>
+          </DialogActions> : ""}
+      </Dialog>
       <Box sx={{ display: 'flex' }}>
         <CssBaseline />
         <AppBar position="absolute" open={open} color="primary">
@@ -335,7 +452,7 @@ function DashboardContent() {
             sx={{
               pr: '24px', // keep right padding when drawer closed
             }}
-            
+
           >
             <IconButton
               edge="start"
@@ -358,7 +475,7 @@ function DashboardContent() {
             >
               OpenUnison
             </Typography>
-            
+
           </Toolbar>
         </AppBar>
         <Drawer variant="permanent" open={open}>
@@ -376,10 +493,10 @@ function DashboardContent() {
             </IconButton>
           </Toolbar>
           <Divider />
-          
-            <NavList user={user} config={config} userObj={userObj} chooseScreenHandler={chooseScreenHandler} pageName={pageName} cart={cart} approvals={approvals} enableOps={enableOps} />
-            
-          
+
+          <NavList user={user} config={config} userObj={userObj} chooseScreenHandler={chooseScreenHandler} pageName={pageName} cart={cart} approvals={approvals} enableOps={enableOps} />
+
+
         </Drawer>
         <Box
           component="main"
@@ -395,24 +512,24 @@ function DashboardContent() {
         >
           <Toolbar />
           <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }} >
-            
-            
-         
-            
-          { pageName == 'front-page' ? (<FrontPage orgs={orgsForLinks} config={config} links={links} title={config.frontPage.title}  orgsById={orgsForLinksById}/>) : ("") }
-          { pageName == 'user' ? (<User config={config} user={user} userObj={userObj} />) : ("") }
-          { pageName == 'request-access' ? (<RequestAccess config={config} user={user} userObj={userObj} orgs={orgs} title={"Request Access"} addWorkflowToCart={addWorkflowToCart} removeWorkflowFromCart={removeWorkflowFromCart} cart={cart} orgsById={orgsById} />) : ("") }
-          { pageName == 'checkout' ? (<CheckOut cart={cart} config={config} removeWorkflowFromCart={removeWorkflowFromCart} replaceWorkflowInCart={replaceWorkflowInCart}/>) : ""}
-          { pageName == 'approvals' ? (<Approvals approvals={approvals} setCurrentApproval={setCurrentApproval} chooseScreenHandler={chooseScreenHandler} />) : ""}
-          { pageName == 'current-approval' ? (<Approval currentApproval={currentApproval} loadOpenApprovals={loadOpenApprovals} config={config}/> ) : "" }
-          { pageName == 'reports' ? (<Reports config={config} user={user} userObj={userObj} orgs={orgs} title={"Reports"}  orgsById={orgsById} setReport={setReport} chooseScreenHandler={chooseScreenHandler} />) : ("") }
-          { pageName == 'report' ? (<Report config={config} user={user} userObj={userObj} report={report}  /> ) : ""}
-          { pageName == 'ops' ? (<Ops config={config} user={user} userObj={userObj} opsConfig={opsConfig} orgs={orgs} orgsById={orgsById} /> ) : ""}
 
 
-            
-            
-            
+
+
+            {pageName == 'front-page' ? (<FrontPage orgs={orgsForLinks} config={config} links={links} title={config.frontPage.title} orgsById={orgsForLinksById} />) : ("")}
+            {pageName == 'user' ? (<User config={config} user={user} userObj={userObj} />) : ("")}
+            {pageName == 'request-access' ? (<RequestAccess config={config} user={user} userObj={userObj} orgs={orgs} title={"Request Access"} addWorkflowToCart={addWorkflowToCart} removeWorkflowFromCart={removeWorkflowFromCart} cart={cart} orgsById={orgsById} />) : ("")}
+            {pageName == 'checkout' ? (<CheckOut cart={cart} config={config} removeWorkflowFromCart={removeWorkflowFromCart} replaceWorkflowInCart={replaceWorkflowInCart} />) : ""}
+            {pageName == 'approvals' ? (<Approvals approvals={approvals} setCurrentApproval={setCurrentApproval} chooseScreenHandler={chooseScreenHandler} />) : ""}
+            {pageName == 'current-approval' ? (<Approval currentApproval={currentApproval} loadOpenApprovals={loadOpenApprovals} config={config} />) : ""}
+            {pageName == 'reports' ? (<Reports config={config} user={user} userObj={userObj} orgs={orgs} title={"Reports"} orgsById={orgsById} setReport={setReport} chooseScreenHandler={chooseScreenHandler} />) : ("")}
+            {pageName == 'report' ? (<Report config={config} user={user} userObj={userObj} report={report} />) : ""}
+            {pageName == 'ops' ? (<Ops config={config} user={user} userObj={userObj} opsConfig={opsConfig} orgs={orgs} orgsById={orgsById} />) : ""}
+
+
+
+
+
             <Copyright sx={{ pt: 4 }} />
           </Container>
         </Box>
