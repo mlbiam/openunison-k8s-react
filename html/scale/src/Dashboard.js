@@ -217,7 +217,7 @@ function DashboardContent() {
     fetch(configData.SERVER_URL + "main/config")
       .then(response => {
         if (! response.ok) {
-          window.location = configData.SERVER_URL;
+          location.reload(true);
         } else {
           setShowDialog(false);
         }
