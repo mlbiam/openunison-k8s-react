@@ -217,11 +217,18 @@ function DashboardContent() {
     fetch(configData.SERVER_URL + "main/config")
       .then(response => {
         if (! response.ok) {
-          location.reload(true);
+          return Promise.resolve({});
+
         } else {
-          setShowDialog(false);
+          return response.json();
         }
-      })
+      }).then(data => {
+        if (data && data.displayNameAttribute) {
+          setShowDialog(false);
+        } else {
+          location.reload(true);
+        }
+      });
   }
 
 
