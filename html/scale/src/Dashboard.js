@@ -228,7 +228,7 @@ function DashboardContent() {
         } else {
           location.reload(true);
         }
-      });
+      }).catch(location.reload(true));
   }
 
 
