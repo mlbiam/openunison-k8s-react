@@ -218,7 +218,9 @@ function DashboardContent() {
       .then(response => {
         if (! response.ok) {
           window.location = configData.SERVER_URL;
-        } 
+        } else {
+          setShowDialog(false);
+        }
       })
   }
 
