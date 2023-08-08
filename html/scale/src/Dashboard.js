@@ -217,9 +217,11 @@ function DashboardContent() {
     fetch(configData.SERVER_URL + "main/config")
       .then(response => {
         if (! response.ok) {
+          console.log("here1");
           return Promise.resolve({});
 
         } else {
+          console.log("here2");
           return response.json();
         }
       }).then(data => {
@@ -228,7 +230,10 @@ function DashboardContent() {
         } else {
           location.reload(true);
         }
-      }).catch(location.reload(true));
+      }).catch(err => {
+        console.log("here4 " + err);
+        location.reload(true);
+      });
   }
 
 
