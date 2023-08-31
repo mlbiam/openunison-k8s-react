@@ -42,10 +42,11 @@ export default function FrontPage(props) {
     }
 
     useEffect(() => {
-        //if (! props.config.showPortalOrgs) {
+        
         setLinks(props.links);
-        fetchLinks(props.orgs.id);
-        //}
+        if (props.config.showPortalOrgs) {
+            fetchLinks(props.orgs.id);
+        }
     }, [props.links])
 
     useEffect(() => {

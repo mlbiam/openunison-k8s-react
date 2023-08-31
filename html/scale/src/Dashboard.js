@@ -280,99 +280,103 @@ function DashboardContent() {
                 ).then(
                   dataLinks => {
                     setLinks({ "urls": dataLinks });
+
+                    setPageName('front-page');
+                    setShowDialog(false);
                   }
                 )
-            }
+            } else {
 
 
-            fetch(configData.SERVER_URL + "main/orgs")
-              .then(response => {
-                return response.json()
-              })
-              .then(dataOrgs => {
+              fetch(configData.SERVER_URL + "main/orgs")
+                .then(response => {
+                  return response.json()
+                })
+                .then(dataOrgs => {
 
 
-                function loadLeaf(root, llocalOrgsById) {
-                  llocalOrgsById[root.id] = root;
-                  for (var i = 0; i < root.subOrgs.length; i++) {
-                    loadLeaf(root.subOrgs[i], llocalOrgsById);
+                  function loadLeaf(root, llocalOrgsById) {
+                    llocalOrgsById[root.id] = root;
+                    for (var i = 0; i < root.subOrgs.length; i++) {
+                      loadLeaf(root.subOrgs[i], llocalOrgsById);
+                    }
                   }
-                }
 
-                console.log(dataOrgs)
-                var localOrgsById = {};
+                  console.log(dataOrgs)
+                  var localOrgsById = {};
 
-                loadLeaf(dataOrgs, localOrgsById);
-
+                  loadLeaf(dataOrgs, localOrgsById);
 
 
-                // load URLs to sort into orgs
 
-                fetch(configData.SERVER_URL + "main/urls")
-                  .then(
-                    response => {
-                      return response.json()
-                    }
-                  ).then(
-                    dataLinks => {
+                  // load URLs to sort into orgs
 
-                      var linkOrgs = JSON.parse(JSON.stringify(dataOrgs));
-                      var linksByOrg = {};
-                      dataLinks.map(url => {
-                        if (!linksByOrg[url.org]) {
-                          linksByOrg[url.org] = [];
-                        }
+                  fetch(configData.SERVER_URL + "main/urls")
+                    .then(
+                      response => {
+                        return response.json()
+                      }
+                    ).then(
+                      dataLinks => {
 
-                        linksByOrg[url.org].push(url)
-                      })
-
-                      function cleanTree(root) {
-                        var toRemove = {};
-                        root.subOrgs.map(childOrg => {
-                          var hasChildren = childOrg.subOrgs.length > 0;
-                          childOrg.links = linksByOrg[childOrg.id];
-                          var hasLinks = childOrg.links && childOrg.links.length > 0;
-                          if (!hasLinks) {
-                            childOrg.links = [];
-                          }
-                          if (!hasChildren && !hasLinks) {
-                            toRemove[childOrg.id] = childOrg;
-                          } else {
-                            cleanTree(childOrg);
+                        var linkOrgs = JSON.parse(JSON.stringify(dataOrgs));
+                        var linksByOrg = {};
+                        dataLinks.map(url => {
+                          if (!linksByOrg[url.org]) {
+                            linksByOrg[url.org] = [];
                           }
 
+                          linksByOrg[url.org].push(url)
+                        })
+
+                        function cleanTree(root) {
+                          var toRemove = {};
+                          root.subOrgs.map(childOrg => {
+                            var hasChildren = childOrg.subOrgs.length > 0;
+                            childOrg.links = linksByOrg[childOrg.id];
+                            var hasLinks = childOrg.links && childOrg.links.length > 0;
+                            if (!hasLinks) {
+                              childOrg.links = [];
+                            }
+                            if (!hasChildren && !hasLinks) {
+                              toRemove[childOrg.id] = childOrg;
+                            } else {
+                              cleanTree(childOrg);
+                            }
 
 
 
 
+
+                          }
+
+                          );
+                          root.subOrgs = root.subOrgs.filter(subOrg => { return !toRemove[subOrg.id] })
                         }
 
-                        );
-                        root.subOrgs = root.subOrgs.filter(subOrg => { return !toRemove[subOrg.id] })
+                        cleanTree(linkOrgs);
+
+                        linkOrgs.links = linksByOrg[linkOrgs.id];
+                        if (!linkOrgs.links) {
+                          linkOrgs.links = [];
+                        }
+
+                        var localLinkOrgsById = {};
+                        loadLeaf(linkOrgs, localLinkOrgsById);
+                        console.log(localLinkOrgsById);
+
+                        setOrgsForLinks(linkOrgs);
+                        setOrgsForLinksById(localLinkOrgsById);
+                        setPageName('front-page');
+                        setShowDialog(false);
                       }
+                    )
 
-                      cleanTree(linkOrgs);
+                  setOrgsById(localOrgsById);
+                  setOrgs(dataOrgs);
 
-                      linkOrgs.links = linksByOrg[linkOrgs.id];
-                      if (!linkOrgs.links) {
-                        linkOrgs.links = [];
-                      }
-
-                      var localLinkOrgsById = {};
-                      loadLeaf(linkOrgs, localLinkOrgsById);
-                      console.log(localLinkOrgsById);
-
-                      setOrgsForLinks(linkOrgs);
-                      setOrgsForLinksById(localLinkOrgsById);
-                      setPageName('front-page');
-                      setShowDialog(false);
-                    }
-                  )
-
-                setOrgsById(localOrgsById);
-                setOrgs(dataOrgs);
-
-              });
+                });
+            }
 
             if (dataConfig.enableApprovals) {
               loadOpenApprovals();
