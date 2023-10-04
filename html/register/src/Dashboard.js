@@ -213,11 +213,7 @@ function DashboardContent() {
       .then(dataConfig => {
         setConfig(dataConfig);
 
-
-
-        var lExtUrls = ['/js/register-functions.js'];
-
-        setExtUrls(lExtUrls);
+        setExtUrls(dataConfig.jsUris);
 
         var localUserData = {
           "attributes": {},
@@ -248,7 +244,7 @@ function DashboardContent() {
 
         var newScripts = [];
 
-        lExtUrls.map(scriptUrl => {
+        dataConfig.jsUris.map(scriptUrl => {
           var script = document.createElement('script');
           script.src = scriptUrl;
           script.async = true;
