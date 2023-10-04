@@ -48,7 +48,6 @@ import RadioGroup from '@mui/material/RadioGroup';
 import { TextField } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
 import Autocomplete from '@mui/material/Autocomplete';
-import ScriptTag from 'react-script-tag';
 import Alert from '@mui/material/Alert';
 
 //import RegisterFunctions from './register-functions.js'
@@ -173,6 +172,7 @@ function DashboardContent() {
 
   const [extUrls,setExtUrls] = React.useState([]);
   const [saveEnabled,setSaveEnabled] = React.useState(true);
+  const [scripts,setScripts] = React.useState([]);
 
 
 
@@ -213,11 +213,11 @@ function DashboardContent() {
       .then(dataConfig => {
         setConfig(dataConfig);
 
-        /*import('/js/register-functions.js').then(imported => {
-          setRegisterFunctions(new imported.default);
-        })*/
 
-        setExtUrls(['/js/register-functions.js']);
+
+        var lExtUrls = ['/js/register-functions.js'];
+
+        setExtUrls(lExtUrls);
 
         var localUserData = {
           "attributes": {},
@@ -246,16 +246,21 @@ function DashboardContent() {
 
         setUserData(localUserData);
 
-        setShowDialog(false);
-        /*fetch(configData.SERVER_URL + "token/user")
-          .then(response => {
-            return response.json()
-          })
-          .then(data => {
-            setUser(data);
-            setShowDialog(false);
+        var newScripts = [];
 
-          })*/
+        lExtUrls.map(scriptUrl => {
+          var script = document.createElement('script');
+          script.src = scriptUrl;
+          script.async = true;
+          document.body.appendChild(script);
+          newScripts.push(script);
+        })
+
+        setScripts(newScripts);
+        setShowDialog(false);
+        return () => {
+          newScripts.map(script => {document.body.removeChild(script)})
+        }
       })
   }
 
@@ -706,11 +711,7 @@ function DashboardContent() {
 
 
             <Copyright sx={{ pt: 4 }} />
-         {
-          extUrls.map(url => {
-            return <ScriptTag key={url} type="text/javascript" src={url} />
-          })
-         } 
+
           
         
           </Container>
