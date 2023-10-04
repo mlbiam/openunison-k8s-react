@@ -47,8 +47,9 @@ import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 import { TextField } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
-
+import Autocomplete from '@mui/material/Autocomplete';
 import ScriptTag from 'react-script-tag';
+import Alert from '@mui/material/Alert';
 
 //import RegisterFunctions from './register-functions.js'
 
@@ -166,7 +167,13 @@ function DashboardContent() {
   const [showDialog, setShowDialog] = React.useState(true);
   const [showDialogButton, setShowDialogButton] = React.useState(false);
 
+  const [showSubmitDialog, setShowSubmitDialog] = React.useState(false);
+  const [submitRequestErrors, setSubmitRequestErrors] = React.useState([]);
+  const [submitRequestSuccess, setSubmitRequestSuccess] = React.useState(false);
+
   const [extUrls,setExtUrls] = React.useState([]);
+  const [saveEnabled,setSaveEnabled] = React.useState(true);
+
 
 
   function extendSession() {
@@ -215,15 +222,25 @@ function DashboardContent() {
         var localUserData = {
           "attributes": {},
           "extraData": {},
-          "enabledAttrs": {}
-
+          "enabledAttrs": {},
+          "reason": ""
         };
 
-        
+        if (dataConfig.reasonIsList) {
+          if (dataConfig.reasons && dataConfig.reasons.length > 0) {
+            localUserData.reason = dataConfig.reasons[0];
+          }
+        }
 
         Object.keys(dataConfig.attributes).map(key => {
           var attrCfg = dataConfig.attributes[key];
-          localUserData.attributes[key] = "";
+          
+          if (dataConfig.attributes[key].values && dataConfig.attributes[key].values.length > 0 && dataConfig.attributes[key].type != "text-list-box") {
+
+            localUserData.attributes[key] = dataConfig.attributes[key].values[0].value;
+          } else {
+            localUserData.attributes[key] = "";
+          }
           localUserData.enabledAttrs[key] = true;
         });
 
@@ -301,18 +318,96 @@ function DashboardContent() {
   }
 
   function onTextInputChange(event, attributeConfig) {
-    var localUserData = {...userData};
+    /*var localUserData = {...userData};
     localUserData.attributes[attributeConfig.name] = event.target.value;
-    setUserData(localUserData);
+    setUserData(localUserData);*/
+
+    if (attributeConfig.type == "text-list") {
+    fetch(configData.SERVER_URL + "register/values?name=" + attributeConfig.name + '&search=' + event.target.value)
+    .then(
+      response => {
+        if (response.ok) {
+          return response.json();
+        } else {
+          return new Promise([]);
+        }
+      }
+    )
+    .then(json => {
+      attributeConfig.values = json;
+
+      attributeConfig.acValues = [];
+
+      attributeConfig.values.map(value => {
+        attributeConfig.acValues.push({"label": value.name, "value": value.value});
+      });
+
+      editEvent(attributeConfig, event);
+    });
+  } else {
+    editEvent(attributeConfig, event);
+  }
+
+
+    
   }
 
   function onListInputChange(event,attributeConfig) {
-    var localUserData = {...userData};
-    localUserData.attributes[attributeConfig.name] = event.target.value;
+    editEvent(attributeConfig, event);
+  }
 
-    eval("update_new_project()");
+  function editEvent(attributeConfig, event) {
+    var localUserData = { ...userData };
+
+
+    if (event.target.textContent) {
+      localUserData.attributes[attributeConfig.name] = event.target.textContent;
+    } else {
+      localUserData.attributes[attributeConfig.name] = event.target.value;
+    }
+    
+
+    
+
+    var eventObj = {
+      configData: configData,
+      event: event,
+      attributeConfig: attributeConfig,
+      userData: localUserData,
+      config: { ...config },
+      setUserData: setUserData,
+      setConfig: setConfig
+    };
+
+
+    if (attributeConfig.editJavaScriptFunction) {
+      eval(attributeConfig.editJavaScriptFunction);
+    }
 
     setUserData(localUserData);
+  }
+
+  function createTextListInput(attributeConfig) {
+    
+    attributeConfig.acValues = [];
+
+    attributeConfig.values.map(value => {
+      attributeConfig.acValues.push({"label": value.name, "value": value.value});
+    });
+
+
+    
+    return <Autocomplete
+              key={attributeConfig.name }
+              label={attributeConfig.displayName}
+              options={attributeConfig.acValues}
+              getOptionLabel={option => option.label }
+              fullWidth
+              onChange={event => {onListInputChange(event,attributeConfig)}}
+              onSelect={event => {onListInputChange(event,attributeConfig)}}
+              renderInput={(params) => <TextField {...params} variant="outlined" label={attributeConfig.displayName} onChange={event => {onTextInputChange(event,attributeConfig)}}  />}
+            />
+        
   }
 
   function createTextInput(attributeConfig) {
@@ -320,15 +415,25 @@ function DashboardContent() {
               label={attributeConfig.displayName}
               defaultValue={userData.attributes[attributeConfig.name]}
               onChange={event => {onTextInputChange(event,attributeConfig)}} 
-              fullWidth/>
+              multiline={attributeConfig.type == "textarea"}
+              rows={20}
+              fullWidth
+              key={attributeConfig.name }/>
   }
 
   function createListInput(attributeConfig) {
-    return <FormControl fullWidth>
+    
+    
+
+
+    
+
+    return <FormControl fullWidth key={attributeConfig.name }>
             <InputLabel id={attributeConfig.name + "-label"}>{attributeConfig.displayName}</InputLabel>
             <Select
                 labelId={attributeConfig.name + "-label"}
                 id={attributeConfig.name }
+                defaultValue={attributeConfig.values.length > 0 ? attributeConfig.values[0].value : "" }
 
                 label={attributeConfig.displayName}
                 onChange={event =>{
@@ -339,7 +444,7 @@ function DashboardContent() {
 
                     attributeConfig.values.map(val => {
 
-                        return <MenuItem  selected={val.value == userData.attributes[attributeConfig.name] } value={val.value}>{val.name}</MenuItem>
+                        return <MenuItem  key={val.name} selected={val.value == userData.attributes[attributeConfig.name] } value={val.value}>{val.name}</MenuItem>
                     })
                 }
 
@@ -352,6 +457,9 @@ function DashboardContent() {
     switch (attributeConfig.type) {
       case "text" : return createTextInput(attributeConfig);
       case "list" : return createListInput(attributeConfig);
+      case "textarea" : return createTextInput(attributeConfig);
+      case "text-list" : return createTextListInput(attributeConfig);
+      case "text-list-box" : return createTextListInput(attributeConfig);
       default: return "";
     }
 
@@ -450,15 +558,36 @@ function DashboardContent() {
         >
           <Toolbar />
           <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }} >
-            <Stack>
+            <Stack spacing={2}>
               <Title>{config.frontPage.title}</Title>
               {config.frontPage.text}
-              <Grid container spacing={1} >
+
+              {(submitRequestErrors.length > 0 ?
+                    <Alert severity="error">
+                        <b>There was a problem submitting your request:</b>
+                        <ul>
+                            {
+                                submitRequestErrors.map((msg) => {
+                                    return <li>{msg}</li>
+                                })
+                            }
+                        </ul>
+                    </Alert>
+
+                    : "")}
+                {(submitRequestSuccess > 0 ?
+                    <Alert severity="success">
+                        <b>Your request has been submitted</b>
+                    </Alert>
+
+                    : "")}
+
+              <Grid container spacing={2} >
                 {
                   config.attributeNameList.map(key => {
                     return config.attributes[key].show ? 
-                    <Grid item xs={12} key={key}>
-                      <Grid container spacing={0} >
+                    <Grid item xs={12} key={key} >
+                      <Grid container spacing={1} >
                         
                         
                         <Grid item md={formClass()}>
@@ -471,7 +600,105 @@ function DashboardContent() {
                     </Grid> : ""
                   })
                 }
+              <Grid item xs={12}  >
+              { 
+                 config.requireReason ? 
+                  config.reasonIsList ? 
+                  
+                  <FormControl fullWidth>
+                    <InputLabel id={"reason-label"}>Reason</InputLabel>
+                    <Select
+                        labelId="reason-label"
+                        
+                        defaultValue={config.reasons.length > 0 ? config.reasons[0] : "" }
+
+                        label="Reason"
+                        onChange={event =>{
+                            var luserData = {...userData};
+                            luserData.reason = event.target.value;
+                            setUserData(luserData);
+                        }}
+                    >
+                        {
+
+                            config.reasons.map(val => {
+
+                                return <MenuItem  key={val} selected={val == userData.reason } value={val}>{val}</MenuItem>
+                            })
+                        }
+
+                    </Select>
+                  </FormControl>
+                  
+                  : 
+                  <TextField
+                  label="Reason"
+                  defaultValue={userData["reason"]}
+                  onChange={event => { var luserData = {...userData};luserData["reason"] = event.target.value;setUserData(luserData) }} 
+                  fullWidth/>
+                 
+                 : "" 
+                }
               </Grid>
+              </Grid>
+
+              <Grid container spacing={2} >
+              <Grid item xs={12} md={6} >
+              <Button  fullWidth disabled={! saveEnabled}  onClick={(event => {
+                    setSaveEnabled(false);
+                    setDialogTitle("Submitting Request");
+                    setDialogText("Submitting your request");
+                    
+                    setShowDialog(true);
+                    
+
+                    config.attributeNameList.map(key => {
+                      if (! userData.attributes[key]) {
+                        userData.attributes[key] = "";
+                      }
+                    })
+
+                    
+
+
+                    const requestOptions = {
+                        mode: "cors",
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(userData)
+                    };
+
+                    fetch(configData.SERVER_URL + "register/submit",requestOptions)
+                        .then(response => {
+                            if (response.status == 200) {
+                                setSubmitRequestSuccess(true);
+                                setShowDialog(false);
+                                setSubmitRequestErrors([]);
+                                
+                                return Promise.resolve({});
+                            } else {
+                                return response.json();
+                            }
+                        })
+                        .then(data => {
+                            if (data.errors) {
+                              setSubmitRequestErrors(data.errors);
+                              setSaveEnabled(true);    
+                            }
+                            
+                            setShowDialog(false);
+                        })
+
+
+                })} >Save</Button>
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <Button fullWidth disabled={! saveEnabled}
+                  onClick={event => {window.location = config.homeURL;}}
+                  
+                  >Cancel Request</Button>
+                </Grid>
+                </Grid>
             </Stack>
 
 
@@ -481,9 +708,9 @@ function DashboardContent() {
             <Copyright sx={{ pt: 4 }} />
          {
           extUrls.map(url => {
-            return <ScriptTag type="text/javascript" src={url} />
+            return <ScriptTag key={url} type="text/javascript" src={url} />
           })
-         }
+         } 
           
         
           </Container>

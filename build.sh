@@ -17,11 +17,21 @@ npm run build
 cd ../../
 pwd
 
+cp configs/config-dist.json html/register/src/config/config.json
+cd html/register
+pwd
+npm install
+npm run build
+cd ../../
+pwd
+
 
 rm -rf build
 mkdir -p build/scale
 mv html/scale/build/* build/scale/
 mkdir -p build/token
 mv html/token/build/* build/token/
+mkdir -p build/register
+mv html/register/build/* build/register/
 
 
