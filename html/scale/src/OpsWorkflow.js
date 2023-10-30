@@ -33,7 +33,7 @@ export default function OpsWorkflow(props) {
     
     const [submitRequestErrors, setSubmitRequestErrors] = React.useState([]);
     const [submitRequestSuccess, setSubmitRequestSuccess] = React.useState([]);
-    const [localWf,setLocalWf] = React.useState({...props.wf,"approved":false,"tryPreApprove":false,"delegate":false})
+    const [localWf,setLocalWf] = React.useState({...props.wf,"approved":false,  "tryPreApprove": props.wf.tryPreApprove ? true : false,"delegate":false,"showPreApprove": props.wf.showPreApprove ? true : false})
 
     function updateWorkflow(wf) {
         setLocalWf(wf);
@@ -120,8 +120,10 @@ export default function OpsWorkflow(props) {
                                                 />
                                                 : ""}</React.Fragment> : "" }
 
-                                    {(localWf.canPreApprove) ?
-                                        <FormControlLabel control={<Checkbox checked={localWf.tryPreApprove} value={localWf.tryPreApprove} onClick={event => {  var nwf = {...localWf};  nwf.tryPreApprove = event.target.checked; updateWorkflow(nwf); }} />} label="Attempt Pre-approval?" />
+                                    {(localWf.canPreApprove && localWf.showPreApprove ) ?
+                                        <FormControlLabel control={<Checkbox checked={
+                                            localWf.tryPreApprove
+                                        } value={localWf.tryPreApprove} onClick={event => {  var nwf = {...localWf};  nwf.tryPreApprove = event.target.checked; updateWorkflow(nwf); }} />} label="Attempt Pre-approval?" />
                                         : ""}
 
                                     {(localWf.canPreApprove && localWf.tryPreApprove) ?
@@ -131,15 +133,15 @@ export default function OpsWorkflow(props) {
                                                 var nwf = {...localWf};  nwf.approved = event.target.value;updateWorkflow(nwf);
                                             }}
                                             >
-                                            <FormControlLabel value={true} control={<Radio value={true} />} label="Approved" />
-                                            <FormControlLabel value={false} control={<Radio value={false} />} label="Denied" />
+                                            <FormControlLabel value={true} control={<Radio value={true} />} label={localWf.approvedLabel} />
+                                            <FormControlLabel value={false} control={<Radio value={false} />} label={localWf.deniedLabel} />
                                         </RadioGroup>
                                         : ""}
 
                                     {(localWf.canPreApprove && localWf.tryPreApprove) ?
                                         <TextField
 
-                                            label={"Reason for " + (localWf.approved == "true" ? "approval" : "denial")}
+                                            label={(localWf.approved == "true" ? localWf.reasonApprovedLabel : localWf.reasonDeniedLabel)}
 
                                             defaultValue={localWf.approvalReason}
                                             onChange={event => { var nwf = {...localWf};  nwf.approvalReason = event.target.value; updateWorkflow(nwf) }}

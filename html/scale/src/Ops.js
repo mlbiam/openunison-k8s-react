@@ -136,6 +136,17 @@ export default function Ops(props) {
                         .then(json => {
                             wf.canPreApprove = json.canPreApprove;
                             wf.canDelegate = json.canDelegate;
+
+                            if (wf.canPreApprove) {
+                                wf.tryPreApprove = props.opsConfig.approveChecked;
+                                wf.showPreApprove = props.opsConfig.showPreApprove;
+
+                                wf.approvedLabel = props.opsConfig.approvedLabel;
+                                wf.deniedLabel = props.opsConfig.deniedLabel;
+                                wf.reasonApprovedLabel = props.opsConfig.reasonApprovedLabel;
+                                wf.reasonDeniedLabel = props.opsConfig.reasonDeniedLabel;
+                            }
+
                             setForceRedraw(Math.random)
                         })
                 });

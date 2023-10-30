@@ -23,6 +23,21 @@ import configData from './config/config.json'
 export default function NavList(props) {
 
     const [logoutWarning, setLogoutWarning] = React.useState(false);
+    
+    function isHidden(pageName) {
+        
+        if (! props.config || ! props.config.hidePages ) {
+            return false;
+        }
+
+        for (var i=0;i<props.config.hidePages.length;i++) {
+            if (props.config.hidePages[i] == pageName) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
 
 
@@ -69,6 +84,10 @@ export default function NavList(props) {
                     </ListItemIcon>
                     <ListItemText primary={props.userObj.attributes[props.config.displayNameAttribute]} />
                 </ListItemButton>
+
+
+                { isHidden('front-page') ? "" :
+                
                 <ListItemButton selected={props.pageName == 'front-page'} onClick={(event) => {
                     props.chooseScreenHandler('front-page');
 
@@ -78,7 +97,13 @@ export default function NavList(props) {
                     </ListItemIcon>
                     <ListItemText primary="Home" />
                 </ListItemButton>
-                {props.config.enableApprovals ?
+
+                }
+
+
+                { isHidden('request-access') ? "" :
+                
+                props.config.enableApprovals ?
                     <ListItemButton selected={props.pageName == 'request-access'} onClick={(event) => {
                         props.chooseScreenHandler('request-access');
 
@@ -87,7 +112,9 @@ export default function NavList(props) {
                             <PeopleIcon />
                         </ListItemIcon>
                         <ListItemText primary="Request Access" />
-                    </ListItemButton> : ""}
+                    </ListItemButton> : ""
+                }
+
                 {props.config.enableApprovals && Object.keys(props.cart).length > 0 ?
 
 

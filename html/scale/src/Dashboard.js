@@ -39,6 +39,9 @@ import LinearProgress from '@mui/material/LinearProgress';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 
+import { red } from '@mui/material/colors';
+
+
 function useInterval(callback, delay) {
   const savedCallback = useRef();
 
@@ -165,6 +168,8 @@ function DashboardContent() {
   const [showDialog, setShowDialog] = React.useState(true);
   const [showDialogButton, setShowDialogButton] = React.useState(false);
 
+  const [ouTheme,setOuTheme] = React.useState(theme);
+
 
   function addWorkflowToCart(wf) {
     var newCart = { ...cart }
@@ -271,6 +276,30 @@ function DashboardContent() {
             loadAttributes(localUserObj, data, dataConfig);
             setUserObj(localUserObj);
 
+            const deftheme = createTheme({
+              palette: {
+                primary: {
+                  main: dataConfig.themePrimaryMain,
+                  dark: dataConfig.themePrimaryDark,
+                  light: dataConfig.themePrimaryLight,
+            
+                },
+                secondary: {
+                  main: dataConfig.themeSecondaryMain,
+                  dark: dataConfig.themeSecondaryDark,
+                  light: dataConfig.themeSecondaryLight,
+                },
+                error: {
+                  main: dataConfig.errorColor,
+                }
+              },
+            });
+
+            setOuTheme(deftheme);
+            
+            
+
+
             if (!dataConfig.showPortalOrgs) {
               fetch(configData.SERVER_URL + "main/urls")
                 .then(
@@ -281,7 +310,7 @@ function DashboardContent() {
                   dataLinks => {
                     setLinks({ "urls": dataLinks });
 
-                    setPageName('front-page');
+                    setPageName(dataConfig.startPage);
                     setShowDialog(false);
                   }
                 )
@@ -367,7 +396,7 @@ function DashboardContent() {
 
                         setOrgsForLinks(linkOrgs);
                         setOrgsForLinksById(localLinkOrgsById);
-                        setPageName('front-page');
+                        setPageName(dataConfig.startPage);
                         setShowDialog(false);
                       }
                     )
@@ -439,7 +468,7 @@ function DashboardContent() {
 
 
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={ouTheme}>
       <Dialog
         open={showDialog}
 
@@ -534,7 +563,7 @@ function DashboardContent() {
 
 
 
-            {pageName == 'front-page' ? (<FrontPage orgs={orgsForLinks} config={config} links={links} title={config.frontPage.title} orgsById={orgsForLinksById} />) : ("")}
+            {pageName == 'front-page' ? (<FrontPage orgs={orgsForLinks} config={config} links={links} title={config.frontPage.title} orgsById={orgsForLinksById}  />) : ("")}
             {pageName == 'user' ? (<User config={config} user={user} userObj={userObj} />) : ("")}
             {pageName == 'request-access' ? (<RequestAccess config={config} user={user} userObj={userObj} orgs={orgs} title={"Request Access"} addWorkflowToCart={addWorkflowToCart} removeWorkflowFromCart={removeWorkflowFromCart} cart={cart} orgsById={orgsById} />) : ("")}
             {pageName == 'checkout' ? (<CheckOut cart={cart} config={config} removeWorkflowFromCart={removeWorkflowFromCart} replaceWorkflowInCart={replaceWorkflowInCart} />) : ""}
