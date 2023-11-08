@@ -69,6 +69,8 @@ export default function Ops(props) {
 
     const [workflows, setWorkflows] = React.useState({ wfs: [] })
     const [visibleWorkflows, setVisibleWorkflows] = React.useState({ wfs: [] })
+    const [annotationFilters,setAnnotationFilters] = React.useState({});
+    const [selectedFilters,setSelectedFilters] = React.useState({});
     const [filter, setFilter] = React.useState("");
     const [currentOrg, setCurrentOrg] = React.useState({});
 
@@ -153,6 +155,28 @@ export default function Ops(props) {
                 
                 
                 var newLinks = { "wfs": wfs };
+
+                var wfAnnotations = {};
+
+                wfs.map(wf => {
+                    Object.keys(wf.filterAnnotations).map(annotationLabel => {
+                        var vals = wfAnnotations[annotationLabel];
+                        if (vals) {
+                            if (! vals.includes(wf.filterAnnotations[annotationLabel])) {
+                                vals.push(wf.filterAnnotations[annotationLabel]);
+                                vals.sort();
+                            }
+                        } else {
+                            vals = ["",wf.filterAnnotations[annotationLabel]];
+                            wfAnnotations[annotationLabel] = vals;
+                        }
+                    })
+                });
+
+                
+
+                setAnnotationFilters(wfAnnotations);
+
                 setWorkflows(newLinks);
                 setVisibleWorkflows(newLinks);
                 setFilter("");
@@ -167,10 +191,15 @@ export default function Ops(props) {
 
     function onWokrlfowChange(event) {
 
-        filterWorkflows(event.target.value);
+        filterWorkflows(event.target.value,selectedFilters);
     }
 
-    function filterWorkflows(filterValue) {
+    
+
+    function filterWorkflows(filterValue,filterAnnotations) {
+        if (! filterAnnotations) {
+            filterAnnotations = {};
+        }
         setFilter(filterValue);
 
 
@@ -179,7 +208,18 @@ export default function Ops(props) {
 
 
             if (filterValue == '' || wf.label.includes(filterValue)) {
-                newVisibleWfs.wfs.push(wf);
+
+                var matchFilters = true;
+
+                Object.keys(filterAnnotations).map(annotationLabel => {
+                    if (filterAnnotations[annotationLabel] != '') {
+                        matchFilters = matchFilters && (wf.filterAnnotations[annotationLabel] == filterAnnotations[annotationLabel]);
+                    }
+                });
+
+                if (matchFilters) {
+                    newVisibleWfs.wfs.push(wf);
+                }
             }
         });
 
@@ -571,6 +611,38 @@ export default function Ops(props) {
                             <Grid item sm={12}>
                                 <TextField label="Filter by label" fullWidth margin="normal" onChange={(event) => onWokrlfowChange(event)} value={filter} />
                             </Grid>
+
+                            {
+                                Object.keys(annotationFilters).map(annotationLabel => {
+                                    return  <Grid item sm={12} md={4}>
+                                                <FormControl fullWidth>
+                                                    <InputLabel id="label-annotation-{annotationLabel}">{annotationLabel}</InputLabel>
+                                                    <Select
+                                                        labelId="label-annotation-{annotationLabel}"
+                                                        id="select-annotation-{annotationLabel}"
+
+                                                        label={annotationLabel}
+                                                        onChange={event =>{
+                                                            var lselectedfilters = {...selectedFilters};
+                                                            lselectedfilters[annotationLabel] = event.target.value;
+                                                            setSelectedFilters(lselectedfilters);
+                                                            filterWorkflows(filter,lselectedfilters);
+                                                        }}
+                                                    >
+                                                        {
+
+                                                            annotationFilters[annotationLabel].map(function (label) {
+
+                                                                return <MenuItem value={label}>{label}</MenuItem>
+                                                            })
+                                                        }
+
+                                                    </Select>
+                                                </FormControl>
+                                            </Grid>
+                                })
+                            }
+
                             {/* Recent Orders */}
                             <Grid item sm={12}>
                             <OpsWorkflows access={visibleWorkflows}  cart={cart} config={props.config} />

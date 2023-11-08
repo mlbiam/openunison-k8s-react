@@ -8,12 +8,18 @@ import { useEffect, useState } from 'react';
 import AccessWorkflows from './AccessWorkflows';
 import { TextField } from '@mui/material';
 import configData from './config/config.json'
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
 
 export default function RequestAccess(props) {
     const [workflows, setWorkflows] = React.useState({ wfs: [] })
     const [visibleWorkflows, setVisibleWorkflows] = React.useState({ wfs: [] })
     const [filter, setFilter] = React.useState("");
     const [currentOrg, setCurrentOrg] = React.useState({});
+    const [annotationFilters,setAnnotationFilters] = React.useState({});
+    const [selectedFilters,setSelectedFilters] = React.useState({});
 
     function fetchWorkflows(node) {
         fetch(configData.SERVER_URL + "main/workflows/org/" + node)
@@ -30,6 +36,25 @@ export default function RequestAccess(props) {
             .then(data => {
                 var wfs = data;
                 var newLinks = { "wfs": wfs };
+
+                var wfAnnotations = {};
+
+                wfs.map(wf => {
+                    Object.keys(wf.filterAnnotations).map(annotationLabel => {
+                        var vals = wfAnnotations[annotationLabel];
+                        if (vals) {
+                            if (! vals.includes(wf.filterAnnotations[annotationLabel])) {
+                                vals.push(wf.filterAnnotations[annotationLabel]);
+                                vals.sort();
+                            }
+                        } else {
+                            vals = ["",wf.filterAnnotations[annotationLabel]];
+                            wfAnnotations[annotationLabel] = vals;
+                        }
+                    })
+                });
+
+                setAnnotationFilters(wfAnnotations);
                 setWorkflows(newLinks);
                 setVisibleWorkflows(newLinks);
                 setFilter("");
@@ -44,10 +69,10 @@ export default function RequestAccess(props) {
 
     function onWokrlfowChange(event) {
 
-        filterWorkflows(event.target.value);
+        filterWorkflows(event.target.value,selectedFilters);
     }
 
-    function filterWorkflows(filterValue) {
+    function filterWorkflows(filterValue,filterAnnotations) {
         setFilter(filterValue);
 
 
@@ -56,7 +81,17 @@ export default function RequestAccess(props) {
 
 
             if (filterValue == '' || wf.label.includes(filterValue)) {
-                newVisibleWfs.wfs.push(wf);
+                var matchFilters = true;
+
+                Object.keys(filterAnnotations).map(annotationLabel => {
+                    if (filterAnnotations[annotationLabel] != '') {
+                        matchFilters = matchFilters && (wf.filterAnnotations[annotationLabel] == filterAnnotations[annotationLabel]);
+                    }
+                });
+
+                if (matchFilters) {
+                    newVisibleWfs.wfs.push(wf);
+                }
             }
         });
 
@@ -71,7 +106,7 @@ export default function RequestAccess(props) {
             props.addWorkflowToCart(wf);
         }
 
-        filterWorkflows(filter)
+        filterWorkflows(filter,selectedFilters)
     }
 
     useEffect(() => {
@@ -115,6 +150,36 @@ export default function RequestAccess(props) {
                 <Grid item sm={12}>
                     <TextField label="Filter by label" fullWidth margin="normal" onChange={(event) => onWokrlfowChange(event)} value={filter} />
                 </Grid>
+                {
+                                Object.keys(annotationFilters).map(annotationLabel => {
+                                    return  <Grid item sm={12} md={4}>
+                                                <FormControl fullWidth>
+                                                    <InputLabel id="label-annotation-{annotationLabel}">{annotationLabel}</InputLabel>
+                                                    <Select
+                                                        labelId="label-annotation-{annotationLabel}"
+                                                        id="select-annotation-{annotationLabel}"
+
+                                                        label={annotationLabel}
+                                                        onChange={event =>{
+                                                            var lselectedfilters = {...selectedFilters};
+                                                            lselectedfilters[annotationLabel] = event.target.value;
+                                                            setSelectedFilters(lselectedfilters);
+                                                            filterWorkflows(filter,lselectedfilters);
+                                                        }}
+                                                    >
+                                                        {
+
+                                                            annotationFilters[annotationLabel].map(function (label) {
+
+                                                                return <MenuItem value={label}>{label}</MenuItem>
+                                                            })
+                                                        }
+
+                                                    </Select>
+                                                </FormControl>
+                                            </Grid>
+                                })
+                            }
                 {/* Recent Orders */}
                 <Grid item sm={12}>
                     <AccessWorkflows access={visibleWorkflows} updateCart={updateCart} cart={props.cart} />
