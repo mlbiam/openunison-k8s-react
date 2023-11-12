@@ -13,7 +13,7 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
+import TableCell, { tableCellClasses } from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
@@ -34,6 +34,13 @@ import Dialog from '@mui/material/Dialog';
 
 import Alert from '@mui/material/Alert';
 import configData from './config/config.json'
+import { styled } from '@mui/material/styles';
+
+
+
+
+
+
 
 
 export default function User(props) {
@@ -41,6 +48,26 @@ export default function User(props) {
     const [showSubmitDialog, setShowSubmitDialog] = React.useState(false);
     const [submitRequestErrors, setSubmitRequestErrors] = React.useState([]);
     const [submitRequestSuccess, setSubmitRequestSuccess] = React.useState(false);
+
+    const StyledTableCell = styled(TableCell)(({ theme }) => ({
+        [`&.${tableCellClasses.head}`]: {
+            backgroundColor: theme.palette.common.black,
+            color: theme.palette.common.white,
+        },
+        [`&.${tableCellClasses.body}`]: {
+            fontSize: 14,
+        },
+    }));
+
+    const StyledTableRow = styled(TableRow)(({ theme }) => ({
+        '&:nth-of-type(odd)': {
+            backgroundColor: theme.palette.action.hover,
+        },
+        // hide last border
+        '&:last-child td, &:last-child th': {
+            border: 0,
+        },
+    }));
 
     function displayName(config, user) {
         for (var i = 0; i < user.attributes.length; i++) {
@@ -185,18 +212,52 @@ export default function User(props) {
                 {/* groups */}
                 <Grid item xs={12} sm={6} >
                     <h3>Roles</h3>
-                    <List>
-                        {props.userObj.currentGroups.map(function (group) {
-                            return (
-                                <ListItemText key={group}>
-                                    <Card variant="outlined" >
-                                        <CardContent style={{ justifyContent: "left", display: "flex" }}>{group}</CardContent>
+                    { props.config.groupsAreJson ? 
+                    
+                        <TableContainer>
+                            <Table aria-label="group table">
+                                <TableHead>
+                                    <TableRow key="header">
+                                        {
+                                            props.config.groupsFields.map(header => {
+                                                return <StyledTableCell key={header} align="left">{header}</StyledTableCell>
+                                            }
 
-                                    </Card>
-                                </ListItemText>
-                            );
-                        })}
-                    </List>
+                                            )
+                                        }
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {
+                                        JSON.parse(props.userObj.currentGroups).map(tblrow => {
+                                            return  <StyledTableRow>
+                                                        {
+                                                            props.config.groupsFields.map(header => {
+                                                                return <StyledTableCell>{tblrow[header]}</StyledTableCell>
+                                                            })
+                                                        }
+                                                    </StyledTableRow>
+                                        })
+                                    }
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+
+                    :
+                        <List>
+                    {props.userObj.currentGroups.map(function (group) {
+                        return (
+                            <ListItemText key={group}>
+                                <Card variant="outlined" >
+                                    <CardContent style={{ justifyContent: "left", display: "flex" }}>{group}</CardContent>
+
+                                </Card>
+                            </ListItemText>
+                        );
+                    })}
+                </List>
+                    }
+                    
                 </Grid>
 
             </Grid>

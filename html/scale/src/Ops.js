@@ -355,7 +355,8 @@ export default function Ops(props) {
 
             <Dialog
                 open={showUserDialog}
-
+                maxWidth={props.opsConfig.maxWidth}
+                fullWidth={true}
                 aria-labelledby="alert-dialog-title"
                 aria-describedby="alert-dialog-description"
             >
@@ -367,26 +368,59 @@ export default function Ops(props) {
                         >
 
                             {/* attributes */}
-                            <Grid item xs={12} sm={6} >
+                            <Grid item xs={12} sm={props.opsConfig.attributesWidth} >
                                 <h3>Attributes</h3>
                                 {showUserAttributes()}
                             </Grid>
 
                             {/* groups */}
-                            <Grid item xs={12} sm={6} >
+                            <Grid item xs={12} sm={props.opsConfig.rolesWidth} >
                                 <h3>Roles</h3>
-                                <List>
-                                    {currentUser.groups.map(function (group) {
-                                        return (
-                                            <ListItemText key={group}>
-                                                <Card variant="outlined" >
-                                                    <CardContent style={{ justifyContent: "left", display: "flex" }}>{group}</CardContent>
+                                { props.config.groupsAreJson && currentUser.groups.length > 0 ? 
+                    
+                        <TableContainer>
+                            <Table aria-label="group table">
+                                <TableHead>
+                                    <TableRow key="header">
+                                        {
+                                            props.config.groupsFields.map(header => {
+                                                return <StyledTableCell key={header} align="left">{header}</StyledTableCell>
+                                            }
 
-                                                </Card>
-                                            </ListItemText>
-                                        );
-                                    })}
-                                </List>
+                                            )
+                                        }
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {
+                                        JSON.parse(currentUser.groups[0]).map(tblrow => {
+                                            return  <StyledTableRow>
+                                                        {
+                                                            props.config.groupsFields.map(header => {
+                                                                return <StyledTableCell>{tblrow[header]}</StyledTableCell>
+                                                            })
+                                                        }
+                                                    </StyledTableRow>
+                                        })
+                                    }
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+
+                    :
+                        <List>
+                    {props.userObj.currentGroups.map(function (group) {
+                        return (
+                            <ListItemText key={group}>
+                                <Card variant="outlined" >
+                                    <CardContent style={{ justifyContent: "left", display: "flex" }}>{group}</CardContent>
+
+                                </Card>
+                            </ListItemText>
+                        );
+                    })}
+                </List>
+                    }
                             </Grid>
 
                         </Grid>
