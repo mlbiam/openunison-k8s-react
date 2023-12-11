@@ -406,7 +406,7 @@ function DashboardContent() {
               fullWidth
               onChange={event => {onListInputChange(event,attributeConfig)}}
               onSelect={event => {onListInputChange(event,attributeConfig)}}
-              renderInput={(params) => <TextField {...params} variant="outlined" label={attributeConfig.displayName} onChange={event => {onTextInputChange(event,attributeConfig)}}  />}
+              renderInput={(params) => <TextField {...params} variant="outlined" label={attributeConfig.displayName} onChange={event => {onTextInputChange(event,attributeConfig)}}  value={attributes.userData[attributeConfig.name]} />}
             />
         
   }
