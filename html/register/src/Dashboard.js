@@ -406,7 +406,7 @@ function DashboardContent() {
               fullWidth
               onChange={event => {onListInputChange(event,attributeConfig)}}
               onSelect={event => {onListInputChange(event,attributeConfig)}}
-              renderInput={(params) => <TextField {...params} variant="outlined" label={attributeConfig.displayName} onChange={event => {onTextInputChange(event,attributeConfig)}}  value={attributes.userData[attributeConfig.name]} />}
+              renderInput={(params) => <TextField {...params} variant="outlined" label={attributeConfig.displayName} onChange={event => {onTextInputChange(event,attributeConfig)}}  value={userData.attributes[attributeConfig.name]} />}
             />
         
   }
@@ -414,7 +414,7 @@ function DashboardContent() {
   function createTextInput(attributeConfig) {
     return  <TextField
               label={attributeConfig.displayName}
-              defaultValue={userData.attributes[attributeConfig.name]}
+              value={userData.attributes[attributeConfig.name]}
               onChange={event => {onTextInputChange(event,attributeConfig)}} 
               multiline={attributeConfig.type == "textarea"}
               rows={20}
