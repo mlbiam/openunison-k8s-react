@@ -434,8 +434,8 @@ function DashboardContent() {
             <Select
                 labelId={attributeConfig.name + "-label"}
                 id={attributeConfig.name }
-                defaultValue={attributeConfig.values.length > 0 ? attributeConfig.values[0].value : "" }
-
+                
+                value={userData.attributes[attributeConfig.name]}
                 label={attributeConfig.displayName}
                 onChange={event =>{
                     onListInputChange(event,attributeConfig);
