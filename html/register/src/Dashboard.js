@@ -385,7 +385,7 @@ function DashboardContent() {
       eval(attributeConfig.editJavaScriptFunction);
     }
 
-    setUserData(localUserData);
+    
   }
 
   function createTextListInput(attributeConfig) {

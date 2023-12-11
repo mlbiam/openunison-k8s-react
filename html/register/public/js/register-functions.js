@@ -11,5 +11,6 @@
             eventObj.config.attributes["gitUrl"].show = json.isGit;
             eventObj.config.attributes["gitSshKey"].show = json.isGit;
             eventObj.setConfig(eventObj.config);
+            eventObj.setUserData(eventObj.userData);
         });
     }
