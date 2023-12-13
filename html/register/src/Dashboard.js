@@ -403,7 +403,7 @@ function DashboardContent() {
               label={attributeConfig.displayName}
               options={attributeConfig.acValues}
               getOptionLabel={option => option.label }
-              value={userData.attributes[attributeConfig.name]}
+              inputValue={userData.attributes[attributeConfig.name]}
               fullWidth
               onChange={event => {onListInputChange(event,attributeConfig)}}
               onSelect={event => {onListInputChange(event,attributeConfig)}}
