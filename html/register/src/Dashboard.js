@@ -363,7 +363,10 @@ function DashboardContent() {
 
     if (event.target.textContent) {
       localUserData.attributes[attributeConfig.name] = event.target.textContent;
-    } else {
+    } else if (event.target.inputValue) {
+      localUserData.attributes[attributeConfig.name] = event.target.inputValue;
+    }
+    else {
       localUserData.attributes[attributeConfig.name] = event.target.value;
     }
     
