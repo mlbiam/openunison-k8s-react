@@ -363,8 +363,6 @@ function DashboardContent() {
 
     if (event.target.textContent) {
       localUserData.attributes[attributeConfig.name] = event.target.textContent;
-    } else if (event.target.inputValue) {
-      localUserData.attributes[attributeConfig.name] = event.target.inputValue;
     }
     else {
       localUserData.attributes[attributeConfig.name] = event.target.value;
@@ -406,7 +404,7 @@ function DashboardContent() {
               label={attributeConfig.displayName}
               options={attributeConfig.acValues}
               getOptionLabel={option => option.label }
-              inputValue={userData.attributes[attributeConfig.name]}
+              value={userData.attributes[attributeConfig.name]}
               fullWidth
               onChange={event => {onListInputChange(event,attributeConfig)}}
               onSelect={event => {onListInputChange(event,attributeConfig)}}
