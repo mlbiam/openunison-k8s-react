@@ -43,7 +43,7 @@ export default function ReportsList(props) {
 
 
     function checkIfCanSubmitReport() {
-        console.log(beginDate)
+        
         var allCnditionsSet = true;
         if (selectedReport.parameters.indexOf("userKey") >= 0) {
             allCnditionsSet = allCnditionsSet && reportUserName.length > 0;

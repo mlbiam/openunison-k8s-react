@@ -229,7 +229,7 @@ export default function Approval(props) {
             <Grid container spacing={1}>
                 <Grid item xs={12} md={6} style={{ justifyContent: "right", display: "flex" }}>
                     <Button variant="contained" color="secondary" fullWidth onClick={event => {
-                        console.log("Justificaiton: " + justification);
+                        
                         if (justification == "") {
                             setSubmitRequestErrors(["Justification is required"]);
                             return;

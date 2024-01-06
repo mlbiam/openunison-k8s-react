@@ -86,7 +86,7 @@ function Copyright(props) {
 }
 
 const reducer = (state) => {
-  console.log(state);
+  
 }
 
 

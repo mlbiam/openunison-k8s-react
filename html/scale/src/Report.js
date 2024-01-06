@@ -82,7 +82,7 @@ export default function Report(props) {
                     return response.blob();
                 })
                 .then((blob) => {
-                    console.log(blob);
+                    
                     
                     const url = window.URL.createObjectURL(blob);
                     const link = document.createElement('a');

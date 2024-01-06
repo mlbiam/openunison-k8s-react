@@ -186,7 +186,7 @@ export default function CheckOut(props) {
                             });
 
 
-                            console.log(wfError);
+                            
 
                             setSubmitRequestSuccess(wfSuccess);
                             setSubmitRequestErrors(wfError);

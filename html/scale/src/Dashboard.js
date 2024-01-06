@@ -76,7 +76,7 @@ function Copyright(props) {
 }
 
 const reducer = (state) => {
-  console.log(state);
+  
 }
 
 
@@ -254,8 +254,7 @@ function DashboardContent() {
         }
       })
       .then(data => {
-        console.log("ops");
-        console.log(data);
+        
         setOpsConfig(data);
       });
 
@@ -331,7 +330,7 @@ function DashboardContent() {
                     }
                   }
 
-                  console.log(dataOrgs)
+                  
                   var localOrgsById = {};
 
                   loadLeaf(dataOrgs, localOrgsById);
@@ -392,7 +391,7 @@ function DashboardContent() {
 
                         var localLinkOrgsById = {};
                         loadLeaf(linkOrgs, localLinkOrgsById);
-                        console.log(localLinkOrgsById);
+                        
 
                         setOrgsForLinks(linkOrgs);
                         setOrgsForLinksById(localLinkOrgsById);

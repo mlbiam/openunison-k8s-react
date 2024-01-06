@@ -325,7 +325,7 @@ export default function Ops(props) {
         } else {
             return <Grid container spacing={1} >
                 {Object.keys(currentUser.metaData).map(attributeName => {
-                    console.log(attributeName);
+                    
                     var attribute = currentUserAttribs[attributeName]
                     return <React.Fragment><Grid item xs={12} md={12} ><b>{currentUser.metaData[attributeName].displayName}</b></Grid><Grid item xs={12} md={12} zeroMinWidth><Typography style={{ overflowWrap: 'break-word' }}>{attribute}</Typography></Grid></React.Fragment>
                 }
@@ -457,7 +457,7 @@ export default function Ops(props) {
                 <Grid container alignContent="center" alignItems="center">
                     {props.opsConfig.searchableAttributes.map(attrCfg => {
                         return <Grid item xs={12} md={3} key={attrCfg.name} alignItems="center" alignContent="center" display="flex">
-                            <Checkbox checked={searchAttributes[attrCfg.name].picked} onClick={event => { console.log("here"); var localSearchAttrs = { ...searchAttributes }; localSearchAttrs[attrCfg.name].picked = event.target.checked; setSearchAttributes(localSearchAttrs); }} />
+                            <Checkbox checked={searchAttributes[attrCfg.name].picked} onClick={event => {  var localSearchAttrs = { ...searchAttributes }; localSearchAttrs[attrCfg.name].picked = event.target.checked; setSearchAttributes(localSearchAttrs); }} />
                             <TextField label={searchAttributes[attrCfg.name].label} margin="normal" value={searchAttributes[attrCfg.name].value} onChange={(event) => { var localSearchAttrs = { ...searchAttributes }; localSearchAttrs[attrCfg.name].value = event.target.value; setSearchAttributes(localSearchAttrs); }} />
                         </Grid>
                     })

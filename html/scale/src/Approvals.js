@@ -94,7 +94,7 @@ export default function Approvals(props) {
                                                 return response.json();
                                             })
                                             .then(dataApproval => {
-                                                console.log(dataApproval);
+                                                
                                                 props.setCurrentApproval(dataApproval);
                                                 props.chooseScreenHandler('current-approval');
                                             });
