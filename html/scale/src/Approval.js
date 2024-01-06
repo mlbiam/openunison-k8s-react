@@ -27,6 +27,13 @@ import Alert from '@mui/material/Alert';
 import ListItemText from '@mui/material/ListItemText';
 import List from '@mui/material/List';
 import configData from './config/config.json'
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell, { tableCellClasses } from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+
 
 export default function Approval(props) {
     
@@ -40,6 +47,26 @@ export default function Approval(props) {
     const [showSubmitDialog,setShowSubmitDialog] = React.useState(false);
     const [submitRequestErrors,setSubmitRequestErrors] = React.useState([]);
     const [submitRequestSuccess,setSubmitRequestSuccess] = React.useState(false);
+
+    const StyledTableCell = styled(TableCell)(({ theme }) => ({
+        [`&.${tableCellClasses.head}`]: {
+            backgroundColor: theme.palette.common.black,
+            color: theme.palette.common.white,
+        },
+        [`&.${tableCellClasses.body}`]: {
+            fontSize: 14,
+        },
+    }));
+
+    const StyledTableRow = styled(TableRow)(({ theme }) => ({
+        '&:nth-of-type(odd)': {
+            backgroundColor: theme.palette.action.hover,
+        },
+        // hide last border
+        '&:last-child td, &:last-child th': {
+            border: 0,
+        },
+    }));
 
     return (
         <React.Fragment>
@@ -173,7 +200,7 @@ export default function Approval(props) {
                 })}
             </List>
                 }
-                
+
                 </Grid>
                 </Grid>
             </React.Fragment>
