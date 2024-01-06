@@ -126,19 +126,54 @@ export default function Approval(props) {
                 </Grid>
                 <Grid item xs={12} md={8}>
                     <h3>Current Roles</h3>
-                    <List>
-                        {approval.userObj.groups.map(function (group) {
-                            console.log(group);
-                            return (
-                                <ListItemText key={group}>
-                                    <Card variant="outlined" >
-                                        <CardContent style={{ justifyContent: "left", display: "flex" }}>{group}</CardContent>
 
-                                    </Card>
-                                </ListItemText>
-                            );
-                        })}
-                    </List>
+
+                    { props.config.groupsAreJson ? 
+                    
+                    <TableContainer>
+                        <Table aria-label="group table">
+                            <TableHead>
+                                <TableRow key="header">
+                                    {
+                                        props.config.groupsFields.map(header => {
+                                            return <StyledTableCell key={header} align="left">{header}</StyledTableCell>
+                                        }
+
+                                        )
+                                    }
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {
+                                    JSON.parse(approval.userObj.groups).map(tblrow => {
+                                        return  <StyledTableRow>
+                                                    {
+                                                        props.config.groupsFields.map(header => {
+                                                            return <StyledTableCell>{tblrow[header]}</StyledTableCell>
+                                                        })
+                                                    }
+                                                </StyledTableRow>
+                                    })
+                                }
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+
+                :
+                    <List>
+                {approval.userObj.groups.map(function (group) {
+                    return (
+                        <ListItemText key={group}>
+                            <Card variant="outlined" >
+                                <CardContent style={{ justifyContent: "left", display: "flex" }}>{group}</CardContent>
+
+                            </Card>
+                        </ListItemText>
+                    );
+                })}
+            </List>
+                }
+                
                 </Grid>
                 </Grid>
             </React.Fragment>
