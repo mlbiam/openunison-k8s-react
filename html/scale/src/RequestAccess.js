@@ -186,5 +186,5 @@ export default function RequestAccess(props) {
                 </Grid>
             </Grid>
         </React.Fragment>
-    );
+    )
 }
