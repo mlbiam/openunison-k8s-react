@@ -13,7 +13,7 @@ export default function Orgs(props) {
   const [selectedNode,setSelectedNode] = React.useState("");
 
   function sortOrgsByName(orgs) {
-    console.log(orgs);
+    
 
     var sortedOrgs = orgs.sort(function (a,b) {
       if (a.name < b.name) {
@@ -24,8 +24,7 @@ export default function Orgs(props) {
         return 1;
       }
     })
-    console.log("sorted");
-    console.log(sortedOrgs);
+    
     return sortedOrgs;
   }
 
