@@ -45,15 +45,15 @@ export default function AccessWorkflows(props) {
                                     
                                 </CardActions>
                             </Card>
-                        </Grid>);
+                        </Grid>)
                     
 
 
 
                     
                     
-                })};
+                })}
             </Grid>
         </React.Fragment>
-    );
+    )
 }
