@@ -12,13 +12,28 @@ export default function Orgs(props) {
 
   const [selectedNode,setSelectedNode] = React.useState("");
 
-  
+  function sortOrgsByName(orgs) {
+    console.log(orgs);
+
+    var sortedOrgs = orgs.sort(function (a,b) {
+      if (a.name < b.name) {
+        return -1;
+      } else if (a.name == b.name) {
+        return 0;
+      } else {
+        return 1;
+      }
+    })
+    console.log("sorted");
+    console.log(sortedOrgs);
+    return sortedOrgs;
+  }
 
   function buildTree(root,flag,first) {
     
     if (root[flag]) {
       var children = [];
-      root.subOrgs.map(function (subOrg){
+      sortOrgsByName(root.subOrgs).map(function (subOrg){
         if (subOrg[flag]) {
           children.push(subOrg);
         }
