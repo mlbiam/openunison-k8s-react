@@ -208,11 +208,26 @@ function DashboardContent() {
       })
       .then(dataApprovals => {
         var newApprovals = {};
+
+
         newApprovals["open"] = dataApprovals.approvals.sort(
           (a, b) => {
             return (a.approvalStart - b.approvalStart);
           }
         );
+
+
+        var approvalNumbers = {};
+        var clearedApprovals = [];
+
+        newApprovals["open"].map(approval => {
+          if (! approvalNumbers[approval.approval.toString()]) {
+            clearedApprovals.push(approval);
+            approvalNumbers[approval.approval.toString()] = "x";
+          }
+        })
+
+        newApprovals["open"] = clearedApprovals;
 
         setApprovals(newApprovals);
       });
