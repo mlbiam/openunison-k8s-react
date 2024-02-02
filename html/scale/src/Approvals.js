@@ -105,14 +105,14 @@ export default function Approvals(props) {
 
                                 </CardActions>
                             </Card>
-                        </Grid>);
+                        </Grid>)
 
 
 
 
 
 
-                    })};
+                    })}
                 </Grid>
 
             </Grid>
