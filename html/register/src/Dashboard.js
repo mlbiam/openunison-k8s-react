@@ -329,7 +329,7 @@ function DashboardContent() {
     localUserData.attributes[attributeConfig.name] = event.target.value;
     setUserData(localUserData);*/
 
-    if (attributeConfig.type == "text-list-box") {
+    if (attributeConfig.type == "text-list-box" || attributeConfig.type == "text-list") {
       fetch(configData.SERVER_URL + "register/values?name=" + attributeConfig.name + '&search=' + event.target.value)
         .then(
           response => {
