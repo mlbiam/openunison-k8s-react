@@ -384,7 +384,8 @@ function DashboardContent() {
       userData: localUserData,
       config: { ...config },
       setUserData: setUserData,
-      setConfig: setConfig
+      setConfig: setConfig,
+      setSubmitRequestErrors: setSubmitRequestErrors
     };
 
 
