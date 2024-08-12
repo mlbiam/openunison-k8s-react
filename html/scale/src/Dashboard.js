@@ -181,6 +181,14 @@ function DashboardContent() {
       .then(json => {
         wf.canPreApprove = json.canPreApprove;
         wf.canDelegate = json.canDelegate;
+
+        if (wf.canDelegate && wf.canPreApprove) {
+          wf.showPreApprove = true;
+          wf.approvedLabel = "Approved";
+          wf.deniedLabel = "Denied";
+          wf.reasonApprovedLabel = "Reason for approval";
+          wf.reasonDeniedLabel = "Reason for denial";
+        }
         newCart[wf.uuid] = wf;
         setCart(newCart);
       })
@@ -192,6 +200,15 @@ function DashboardContent() {
   function removeWorkflowFromCart(wf) {
     var newCart = { ...cart }
     delete newCart[wf.uuid];
+    setCart(newCart);
+  }
+
+  function removeWorkflowsFromCart(wfs) {
+    var newCart = { ...cart }
+    for (var i = 0;i<wfs.length;i++) {
+      delete newCart[wfs[i].uuid];
+    }
+    
     setCart(newCart);
   }
 
@@ -579,8 +596,8 @@ function DashboardContent() {
 
             {pageName == 'front-page' ? (<FrontPage orgs={orgsForLinks} config={config} links={links} title={config.frontPage.title} orgsById={orgsForLinksById}  />) : ("")}
             {pageName == 'user' ? (<User config={config} user={user} userObj={userObj} />) : ("")}
-            {pageName == 'request-access' ? (<RequestAccess config={config} user={user} userObj={userObj} orgs={orgs} title={"Request Access"} addWorkflowToCart={addWorkflowToCart} removeWorkflowFromCart={removeWorkflowFromCart} cart={cart} orgsById={orgsById} />) : ("")}
-            {pageName == 'checkout' ? (<CheckOut cart={cart} config={config} removeWorkflowFromCart={removeWorkflowFromCart} replaceWorkflowInCart={replaceWorkflowInCart} />) : ""}
+            {pageName == 'request-access' ? (<RequestAccess config={config} user={user} userObj={userObj} orgs={orgs} title={"Request Access"} addWorkflowToCart={addWorkflowToCart}  removeWorkflowFromCart={removeWorkflowFromCart} cart={cart} orgsById={orgsById} />) : ("")}
+            {pageName == 'checkout' ? (<CheckOut cart={cart} config={config} removeWorkflowFromCart={removeWorkflowFromCart} replaceWorkflowInCart={replaceWorkflowInCart} removeWorkflowsFromCart={removeWorkflowsFromCart}/>) : ""}
             {pageName == 'approvals' ? (<Approvals approvals={approvals} setCurrentApproval={setCurrentApproval} chooseScreenHandler={chooseScreenHandler} />) : ""}
             {pageName == 'current-approval' ? (<Approval currentApproval={currentApproval} loadOpenApprovals={loadOpenApprovals} config={config} />) : ""}
             {pageName == 'reports' ? (<Reports config={config} user={user} userObj={userObj} orgs={orgs} title={"Reports"} orgsById={orgsById} setReport={setReport} chooseScreenHandler={chooseScreenHandler} />) : ("")}

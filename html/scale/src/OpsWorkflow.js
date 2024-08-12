@@ -120,17 +120,19 @@ export default function OpsWorkflow(props) {
                                                 />
                                                 : ""}</React.Fragment> : "" }
 
-                                    {(localWf.canPreApprove && localWf.showPreApprove ) ?
+                                    {( ((props.fromCheckout && localWf.delegate) || (! props.fromCheckout)) && localWf.canPreApprove && localWf.showPreApprove ) ?
                                         <FormControlLabel control={<Checkbox checked={
                                             localWf.tryPreApprove
                                         } value={localWf.tryPreApprove} onClick={event => {  var nwf = {...localWf};  nwf.tryPreApprove = event.target.checked; updateWorkflow(nwf); }} />} label="Attempt Pre-approval?" />
                                         : ""}
 
-                                    {(localWf.canPreApprove && localWf.tryPreApprove) ?
+                                    {(((props.fromCheckout && localWf.delegate) || (! props.fromCheckout)) && localWf.canPreApprove && localWf.tryPreApprove) ?
                                         <RadioGroup
                                             value={localWf.approved}     
                                             onChange={event => {
-                                                var nwf = {...localWf};  nwf.approved = event.target.value;updateWorkflow(nwf);
+                                                var nwf = {...localWf};
+                                                nwf.approved = event.target.value == "true";
+                                                updateWorkflow(nwf);
                                             }}
                                             >
                                             <FormControlLabel value={true} control={<Radio value={true} />} label={localWf.approvedLabel} />
@@ -138,7 +140,7 @@ export default function OpsWorkflow(props) {
                                         </RadioGroup>
                                         : ""}
 
-                                    {(localWf.canPreApprove && localWf.tryPreApprove) ?
+                                    {(((props.fromCheckout && localWf.delegate) || (! props.fromCheckout)) && localWf.canPreApprove && localWf.tryPreApprove) ?
                                         <TextField
 
                                             label={(localWf.approved == "true" ? localWf.reasonApprovedLabel : localWf.reasonDeniedLabel)}

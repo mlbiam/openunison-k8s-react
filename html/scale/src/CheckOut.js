@@ -119,7 +119,7 @@ export default function CheckOut(props) {
 
                         return (
                             <Grid item xs={12} key={wf.uuid} sx={{ mt: 4, mb: 4 }}>
-                                <OpsWorkflow  wf={wf} config={props.config} setShowSubmitDialog={setShowSubmitDialog} setWorkflow={setWorkflow} submitRequestSuccess={submitRequestSuccess} submitRequestErrors={submitRequestErrors} wfButton={removeWorkflowButton} />
+                                <OpsWorkflow  wf={wf} config={props.config} setShowSubmitDialog={setShowSubmitDialog} setWorkflow={setWorkflow} submitRequestSuccess={submitRequestSuccess} submitRequestErrors={submitRequestErrors} wfButton={removeWorkflowButton} fromCheckout={true} />
                             </Grid>);
 
 
@@ -127,7 +127,7 @@ export default function CheckOut(props) {
 
 
 
-                    })};
+                    })}
                 </Grid>
                 <Button variant="contained" size="large" onClick={(event) => {
                     // show dialog
@@ -160,38 +160,41 @@ export default function CheckOut(props) {
 
                             wfRequests.push(wfrequest);
                         }
-                    );
+                    )
 
                     const requestOptions = {
                         mode: "cors",
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(wfRequests)
-                    };
+                    }
 
                     fetch(configData.SERVER_URL + "main/workflows", requestOptions)
                         .then(response => response.json())
                         .then(data => {
                             var wfSuccess = [];
                             var wfError = [];
+                            var wfToRemove = [];
 
                             Object.keys(data).map((wfid) => {
                                 var result = data[wfid];
                                 if (result == "success") {
                                     wfSuccess.push(props.cart[wfid].label);
-                                    props.removeWorkflowFromCart(props.cart[wfid]);
+                                    wfToRemove.push(props.cart[wfid]);
+                                    
                                 } else {
                                     wfError.push(props.cart[wfid].label + ' - ' + result);
                                 }
                             });
 
+                            props.removeWorkflowsFromCart(wfToRemove);
 
                             
 
                             setSubmitRequestSuccess(wfSuccess);
                             setSubmitRequestErrors(wfError);
                             setShowSubmitDialog(false);
-                        });
+                        })
                 }} startIcon={<ConfirmationNumberIcon />}>Submit Your Requests</Button>
             </Grid>
 
