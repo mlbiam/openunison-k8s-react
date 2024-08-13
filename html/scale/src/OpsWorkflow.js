@@ -143,7 +143,7 @@ export default function OpsWorkflow(props) {
                                     {(((props.fromCheckout && localWf.delegate) || (! props.fromCheckout)) && localWf.canPreApprove && localWf.tryPreApprove) ?
                                         <TextField
 
-                                            label={(localWf.approved == "true" ? localWf.reasonApprovedLabel : localWf.reasonDeniedLabel)}
+                                            label={(localWf.approved == true ? localWf.reasonApprovedLabel : localWf.reasonDeniedLabel)}
 
                                             defaultValue={localWf.approvalReason}
                                             onChange={event => { var nwf = {...localWf};  nwf.approvalReason = event.target.value; updateWorkflow(nwf) }}
