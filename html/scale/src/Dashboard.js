@@ -391,17 +391,35 @@ function DashboardContent() {
 
                         function cleanTree(root) {
                           var toRemove = {};
+                          var foundLinks = false;
                           root.subOrgs.map(childOrg => {
-                            var hasChildren = childOrg.subOrgs.length > 0;
+                            var hasChildren = false;
+                            for (var i=0;i<childOrg.subOrgs.length;i++) {
+                              if (childOrg.subOrgs[i].showInPortal) {
+                                hasChildren = true;
+                                
+                              }
+                            }
+
+                            if (! hasChildren) {
+                              childOrg.subOrgs = [];
+                            }
+                            
+                            
                             childOrg.links = linksByOrg[childOrg.id];
                             var hasLinks = childOrg.links && childOrg.links.length > 0;
                             if (!hasLinks) {
                               childOrg.links = [];
+                            } else {
+                              foundLinks = true;
                             }
+
                             if (!hasChildren && !hasLinks) {
                               toRemove[childOrg.id] = childOrg;
                             } else {
-                              cleanTree(childOrg);
+                              if (cleanTree(childOrg) && ! foundLinks) {
+                                toRemove[childOrg.id] = childOrg;
+                              }
                             }
 
 
@@ -412,6 +430,7 @@ function DashboardContent() {
 
                           );
                           root.subOrgs = root.subOrgs.filter(subOrg => { return !toRemove[subOrg.id] })
+                          return (root.subOrgs.length == 0);
                         }
 
                         cleanTree(linkOrgs);
