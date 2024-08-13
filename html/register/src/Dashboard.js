@@ -231,7 +231,7 @@ function DashboardContent() {
         Object.keys(dataConfig.attributes).map(key => {
           var attrCfg = dataConfig.attributes[key];
 
-          if (dataConfig.attributes[key].values && dataConfig.attributes[key].values.length > 0 && dataConfig.attributes[key].type != "text-list-box") {
+          if (dataConfig.attributes[key].values && dataConfig.attributes[key].values.length > 0 && dataConfig.attributes[key].type != "text-list-box" && dataConfig.attributes[key].type != "chk-text-list-box") {
 
             localUserData.attributes[key] = dataConfig.attributes[key].values[0].value;
           } else {
@@ -322,6 +322,19 @@ function DashboardContent() {
     } else {
       return config.attributes[attributeName].displayName;
     }
+  }
+
+  function onEnabledCheckboxChanged(event,attributeConfig) {
+    var localConfig = {...config};
+    var localUserData = { ...userData };
+    localConfig.attributes[attributeConfig.name].enabled = event.target.checked;
+
+    if (! event.target.checked) {
+      localUserData.attributes[attributeConfig.name] = "";
+    }
+    setConfig(localConfig);
+    setUserData(localUserData);
+
   }
 
   function onTextInputChange(event, attributeConfig) {
@@ -425,6 +438,37 @@ function DashboardContent() {
 
   }
 
+  function createCheckTextListInput(attributeConfig) {
+
+    attributeConfig.acValues = [{ "label": "", "value": "" }];
+
+    attributeConfig.values.map(value => {
+      attributeConfig.acValues.push({ "label": value.name, "value": value.value });
+    });
+
+
+
+    return <Autocomplete
+      key={attributeConfig.name}
+      label={controlLabel(attributeConfig.name)}
+      options={attributeConfig.acValues}
+      getOptionLabel={option => option.label}
+      fullWidth
+      onChange={event => { onListInputChange(event, attributeConfig) }}
+      disabled={! attributeConfig.enabled}
+
+      renderInput={(params) => 
+        <React.Fragment>
+        <Checkbox onChange={event => {onEnabledCheckboxChanged(event,attributeConfig)} } checked={attributeConfig.enabled}/> Enable {controlLabel(attributeConfig.name)}
+        <TextField {...params} variant="outlined" label={controlLabel(attributeConfig.name)} onChange={event => { onTextInputChange(event, attributeConfig) }}  disabled={! attributeConfig.enabled} />
+        </React.Fragment>
+      }
+      isOptionEqualToValue={(option, value) => option.label == value.label && option.value == value.value}
+      value={{ "label": userData.attributes[attributeConfig.name], "value": userData.attributes[attributeConfig.name] }}
+    />
+
+  }
+
   function createTextInput(attributeConfig) {
     return <TextField
       label={controlLabel(attributeConfig.name)}
@@ -475,6 +519,7 @@ function DashboardContent() {
       case "textarea": return createTextInput(attributeConfig);
       case "text-list": return createTextListInput(attributeConfig);
       case "text-list-box": return createTextListInput(attributeConfig);
+      case "chk-text-list-box": return createCheckTextListInput(attributeConfig);
       default: return "";
     }
 
