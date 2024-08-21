@@ -10,6 +10,9 @@
         .then(json => {
             eventObj.config.attributes["gitUrl"].show = json.isGit;
             eventObj.config.attributes["gitSshKey"].show = json.isGit;
+            if (eventObj.config.attributes["gitPath"]) {
+                eventObj.config.attributes["gitPath"].show = json.isGit;
+            }
             eventObj.setConfig(eventObj.config);
             eventObj.setUserData(eventObj.userData);
         });
