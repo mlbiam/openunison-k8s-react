@@ -49,6 +49,9 @@ import { TextField } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
 import Autocomplete from '@mui/material/Autocomplete';
 import Alert from '@mui/material/Alert';
+import { Interweave } from 'interweave';
+
+import ReCAPTCHA from "react-google-recaptcha"
 
 //import RegisterFunctions from './register-functions.js'
 
@@ -154,7 +157,7 @@ function DashboardContent() {
     setPageName(screenName);
   }
 
-  const [config, setConfig] = React.useState({ "frontPage": { "title": "" }, "attributeNameList": [] });
+  const [config, setConfig] = React.useState({ "frontPage": { "title": "" }, "attributeNameList": [], "headerTitle": "OpenUnisonX" });
   const [userData, setUserData] = React.useState({});
 
   const [user, setUser] = React.useState({ "token": {} });
@@ -173,6 +176,11 @@ function DashboardContent() {
   const [extUrls, setExtUrls] = React.useState([]);
   const [saveEnabled, setSaveEnabled] = React.useState(true);
   const [scripts, setScripts] = React.useState([]);
+  const [ouTheme,setOuTheme] = React.useState(theme);
+
+  const [rcResponse,setRcResponse] = React.useState("");
+  const recaptchaRef = React.createRef();
+  
 
 
 
@@ -240,7 +248,32 @@ function DashboardContent() {
           localUserData.enabledAttrs[key] = true;
         });
 
+        if (rcResponse != "") {
+          localUserData.reCaptchaCode = rcResponse;
+        }
+
         setUserData(localUserData);
+
+        const deftheme = createTheme({
+          palette: {
+            primary: {
+              main: dataConfig.themePrimaryMain,
+              dark: dataConfig.themePrimaryDark,
+              light: dataConfig.themePrimaryLight,
+        
+            },
+            secondary: {
+              main: dataConfig.themeSecondaryMain,
+              dark: dataConfig.themeSecondaryDark,
+              light: dataConfig.themeSecondaryLight,
+            },
+            error: {
+              main: dataConfig.errorColor,
+            }
+          },
+        });
+
+        setOuTheme(deftheme);
 
         var newScripts = [];
 
@@ -527,7 +560,7 @@ function DashboardContent() {
   }
 
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={ouTheme}>
       <Dialog
         open={showDialog}
 
@@ -579,7 +612,7 @@ function DashboardContent() {
               noWrap
               sx={{ flexGrow: 1 }}
             >
-              OpenUnison
+              { config.headerTitle }
             </Typography>
 
           </Toolbar>
@@ -666,6 +699,40 @@ function DashboardContent() {
 
                   })
                 }
+
+                { config.requireReCaptcha ? 
+                <React.Fragment>
+                  <Grid item xs={formClass()}>
+                    <ReCAPTCHA
+                      ref={recaptchaRef}
+                      sitekey={config.rcSiteKey} onChange={event => {
+                        
+                      }} />
+                  </Grid>
+                </React.Fragment>
+                
+                : ""}
+
+
+                { config.requireTermsAndConditions ? 
+                  <React.Fragment>
+                    <Grid item xs={formClass()}>
+                      <Interweave content={config.termsAndConditionsText	} /> 
+                    </Grid>
+                    <Grid item xs={formClass()}>
+                      <FormControlLabel control={<Checkbox value={userData.checkedTermsAndConditions}  onChange={event => {
+                        var localUserData = {...userData}
+                        localUserData.checkedTermsAndConditions	= event.target.checked;
+                        setUserData(localUserData);
+
+                      }}/>} label="I Accept" />
+                    </Grid>
+                  </React.Fragment>  
+                  
+                : "" }
+
+                
+
                 <Grid item xs={12}  >
                   {
                     config.requireReason ?
@@ -723,6 +790,11 @@ function DashboardContent() {
                         userData.attributes[key] = "";
                       }
                     })
+
+                    if (config.requireReCaptcha) {
+                      userData.reCaptchaCode = recaptchaRef.current.getValue();
+                      recaptchaRef.current.reset();
+                    }
 
 
 
