@@ -144,7 +144,7 @@ function DashboardContent() {
     setPageName(screenName);
   }
 
-  const [config, setConfig] = React.useState({});
+  const [config, setConfig] = React.useState({"headerTitle": "OpenUnison"});
   const [user, setUser] = React.useState({});
   const [userObj, setUserObj] = React.useState({ "currentGroups": [], "attributes": {} })
   const [orgs, setOrgs] = React.useState({});
@@ -570,7 +570,7 @@ function DashboardContent() {
               noWrap
               sx={{ flexGrow: 1 }}
             >
-              OpenUnison
+              { config.headerTitle }
             </Typography>
 
           </Toolbar>
