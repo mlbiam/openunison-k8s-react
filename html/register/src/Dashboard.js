@@ -219,7 +219,10 @@ function DashboardContent() {
         return response.json()
       })
       .then(dataConfig => {
-        setConfig(dataConfig);
+        
+        
+
+        var localDataConfig = {...dataConfig};
 
         setExtUrls(dataConfig.jsUris);
 
@@ -252,6 +255,7 @@ function DashboardContent() {
           localUserData.reCaptchaCode = rcResponse;
         }
 
+        setConfig(localDataConfig);
         setUserData(localUserData);
 
         const deftheme = createTheme({
@@ -357,6 +361,10 @@ function DashboardContent() {
     }
   }
 
+  function controlLabelSimple(attributeName) {
+    return config.attributes[attributeName].displayName;
+  }
+
   function onEnabledCheckboxChanged(event,attributeConfig) {
     var localConfig = {...config};
     var localUserData = { ...userData };
@@ -364,7 +372,8 @@ function DashboardContent() {
 
     if (! event.target.checked) {
       localUserData.attributes[attributeConfig.name] = "";
-    }
+    } 
+    
     setConfig(localConfig);
     setUserData(localUserData);
 
@@ -375,7 +384,7 @@ function DashboardContent() {
     localUserData.attributes[attributeConfig.name] = event.target.value;
     setUserData(localUserData);*/
 
-    if (attributeConfig.type == "text-list-box" || attributeConfig.type == "text-list") {
+    if (attributeConfig.type == "text-list-box" || attributeConfig.type == "text-list" || attributeConfig.type == "chk-text-list-box") {
       fetch(configData.SERVER_URL + "register/values?name=" + attributeConfig.name + '&search=' + event.target.value)
         .then(
           response => {
@@ -480,6 +489,12 @@ function DashboardContent() {
     });
 
 
+    // if (userData.attributes[attributeConfig.name] != null && userData.attributes[attributeConfig.name].length > 0 ) {
+    //   attributeConfig.enabled = true;
+    // } else {
+    //   attributeConfig.enabled = false;
+    // }
+
 
     return <Autocomplete
       key={attributeConfig.name}
@@ -492,7 +507,7 @@ function DashboardContent() {
 
       renderInput={(params) => 
         <React.Fragment>
-        <Checkbox onChange={event => {onEnabledCheckboxChanged(event,attributeConfig)} } checked={attributeConfig.enabled}/> Enable {controlLabel(attributeConfig.name)}
+        <Checkbox checked={attributeConfig.checked}/>  Enable {controlLabelSimple(attributeConfig.name)}
         <TextField {...params} variant="outlined" label={controlLabel(attributeConfig.name)} onChange={event => { onTextInputChange(event, attributeConfig) }}  disabled={! attributeConfig.enabled} />
         </React.Fragment>
       }
