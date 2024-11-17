@@ -50,6 +50,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Autocomplete from '@mui/material/Autocomplete';
 import Alert from '@mui/material/Alert';
 import { Interweave } from 'interweave';
+import Switch from '@mui/material/Switch'
 
 import ReCAPTCHA from "react-google-recaptcha"
 
@@ -507,7 +508,7 @@ function DashboardContent() {
 
       renderInput={(params) => 
         <React.Fragment>
-        <Checkbox checked={attributeConfig.checked}/>  Enable {controlLabelSimple(attributeConfig.name)}
+        <Switch checked={attributeConfig.enabled} onChange={event => {onEnabledCheckboxChanged(event,attributeConfig)} }/>  Enable {controlLabelSimple(attributeConfig.name)}
         <TextField {...params} variant="outlined" label={controlLabel(attributeConfig.name)} onChange={event => { onTextInputChange(event, attributeConfig) }}  disabled={! attributeConfig.enabled} />
         </React.Fragment>
       }
