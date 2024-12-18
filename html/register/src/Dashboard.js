@@ -380,6 +380,47 @@ function DashboardContent() {
 
   }
 
+  function onTextButtonInputChange(event, attributeConfig) {
+    /*var localUserData = {...userData};
+    localUserData.attributes[attributeConfig.name] = event.target.value;
+    setUserData(localUserData);*/
+
+    
+    var localUserData = { ...userData };
+
+
+    if (event.target.textContent) {
+      localUserData.attributes[attributeConfig.name] = event.target.textContent;
+    }
+    else {
+      localUserData.attributes[attributeConfig.name] = event.target.value;
+    }
+
+
+
+
+    var eventObj = {
+      configData: configData,
+      event: event,
+      attributeConfig: attributeConfig,
+      userData: localUserData,
+      config: { ...config },
+      setUserData: setUserData,
+      setConfig: setConfig,
+      setSubmitRequestErrors: setSubmitRequestErrors
+    };
+
+
+    
+    setUserData(localUserData);
+    setConfig(config);
+    
+    
+
+
+
+  }
+
   function onTextInputChange(event, attributeConfig) {
     /*var localUserData = {...userData};
     localUserData.attributes[attributeConfig.name] = event.target.value;
@@ -417,6 +458,32 @@ function DashboardContent() {
 
   function onListInputChange(event, attributeConfig) {
     editEvent(attributeConfig, event);
+  }
+
+  function onButtonClick(attributeConfig, event) {
+    var localUserData = { ...userData };
+
+    var eventObj = {
+      configData: configData,
+      event: event,
+      attributeConfig: attributeConfig,
+      userData: localUserData,
+      config: { ...config },
+      setUserData: setUserData,
+      setConfig: setConfig,
+      setSubmitRequestErrors: setSubmitRequestErrors,
+      setShowSubmitDialog: setShowSubmitDialog
+    };
+
+
+    if (attributeConfig.editJavaScriptFunction) {
+      eval(attributeConfig.editJavaScriptFunction);
+    } else {
+      setUserData(localUserData);
+      setConfig(config);
+    }
+
+
   }
 
   function editEvent(attributeConfig, event) {
@@ -518,6 +585,19 @@ function DashboardContent() {
 
   }
 
+
+  function createTextButtonInput(attributeConfig) {
+    return <Stack><TextField
+      label={controlLabel(attributeConfig.name)}
+      value={userData.attributes[attributeConfig.name]}
+      onChange={event => { onTextButtonInputChange(event, attributeConfig) }}
+      multiline={attributeConfig.type == "textarea"}
+      rows={20}
+      fullWidth
+      
+      key={attributeConfig.name} /><Button variant="contained" onClick={event => { onButtonClick(attributeConfig,event) }} fullWidth >Lookup</Button></Stack>
+  }
+
   function createTextInput(attributeConfig) {
     return <TextField
       label={controlLabel(attributeConfig.name)}
@@ -564,6 +644,7 @@ function DashboardContent() {
 
     switch (attributeConfig.type) {
       case "text": return createTextInput(attributeConfig);
+      case "text-button": return createTextButtonInput(attributeConfig);
       case "list": return createListInput(attributeConfig);
       case "textarea": return createTextInput(attributeConfig);
       case "text-list": return createTextListInput(attributeConfig);
