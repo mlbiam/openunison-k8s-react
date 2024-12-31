@@ -332,6 +332,7 @@ function DashboardContent() {
 
 
             if (!dataConfig.showPortalOrgs) {
+              // load the URLS, but still need the orgs
               fetch(configData.SERVER_URL + "main/urls")
                 .then(
                   response => {
@@ -345,8 +346,31 @@ function DashboardContent() {
                     setShowDialog(false);
                   }
                 )
-            } else {
 
+              // even if the portal screen doesn't have orgs, still need to load them
+              fetch(configData.SERVER_URL + "main/orgs")
+                .then(response => {
+                  return response.json()
+                })
+                .then(dataOrgs => {
+                if (config.enableApprovals) {
+                  function loadLeaf(root, llocalOrgsById) {
+                    llocalOrgsById[root.id] = root;
+                    for (var i = 0; i < root.subOrgs.length; i++) {
+                      loadLeaf(root.subOrgs[i], llocalOrgsById);
+                    }
+                  }
+
+                  
+                  var localOrgsById = {};
+
+                  loadLeaf(dataOrgs, localOrgsById);
+
+                  setOrgsById(localOrgsById);
+                  setOrgs(dataOrgs);
+              }});
+            } else {
+              // load the orgs and links per org
 
               fetch(configData.SERVER_URL + "main/orgs")
                 .then(response => {
