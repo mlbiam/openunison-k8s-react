@@ -353,7 +353,7 @@ function DashboardContent() {
                   return response.json()
                 })
                 .then(dataOrgs => {
-                if (config.enableApprovals) {
+                if (configData.enableApprovals) {
                   function loadLeaf(root, llocalOrgsById) {
                     llocalOrgsById[root.id] = root;
                     for (var i = 0; i < root.subOrgs.length; i++) {
