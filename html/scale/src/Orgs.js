@@ -1,6 +1,7 @@
 import * as React from 'react';
-import TreeView from '@mui/lab/TreeView';
-import TreeItem from '@mui/lab/TreeItem';
+
+import { SimpleTreeView } from '@mui/x-tree-view/SimpleTreeView';
+import { TreeItem } from '@mui/x-tree-view/TreeItem';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import Title from './Title'
@@ -39,7 +40,7 @@ export default function Orgs(props) {
       });
 
 
-      return <TreeItem key={root.id} nodeId={root.id} label={root.name} expanded={first} data={root}>
+      return <TreeItem key={root.id} itemId={root.id}  label={root.name} expanded={first} data={root}>
               {children.map(function (subOrg){return buildTree(subOrg,flag) })}
              </TreeItem>
     } else {
@@ -62,22 +63,21 @@ export default function Orgs(props) {
     <React.Fragment>
         <Title>{props.title}</Title>
         <Typography>{props.config.frontPage.text}</Typography>
-        <TreeView
+        <SimpleTreeView
         aria-label="file system navigator"
-        defaultCollapseIcon={<ExpandMoreIcon />}
-        defaultExpandIcon={<ChevronRightIcon />}
+        
         sx={{ height: 240, flexGrow: 1, maxWidth: 400, overflowY: 'visible' ,overflowX: 'hidden'}}
-        defaultExpanded={[props.orgs.id]}
+        defaultExpandedItems={[props.orgs.id]}
         selected={selectedNode}
-        defaultSelected={props.orgs.id}
-        onNodeSelect={selectOrg}
+        defaultSelectedItems={[props.orgs.id]}
+        onItemClick={selectOrg}
         >
 
         {buildTree(props.orgs,props.flag)}
 
         
         
-        </TreeView>
+        </SimpleTreeView>
     </React.Fragment>
   );
 }

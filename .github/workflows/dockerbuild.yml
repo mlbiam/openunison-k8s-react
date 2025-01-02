@@ -25,7 +25,7 @@ jobs:
 
       - name: generate tag
         run: |-
-          export PROJ_VERSION="1.0.0"
+          export PROJ_VERSION="1.0.1"
           echo "Project Version: $PROJ_VERSION"
           echo "TAG=$PROJ_VERSION-$(echo $GITHUB_SHA | cut -c 1-6)" >> $GITHUB_ENV
           echo "SHORT_TAG=$PROJ_VERSION" >> $GITHUB_ENV
@@ -56,15 +56,18 @@ jobs:
         with:
           push: true
           context: "."
+          platforms: linux/amd64,linux/arm64
           dockerFile: "./DockerFile"
           tags: |
+            ghcr.io/${{ env.REPO }}:${{ env.TAG }}
+            ghcr.io/${{ env.REPO }}:${{ env.SHORT_TAG }}
+            ghcr.io/${{ env.REPO }}:latest
+            
             docker.io/${{ secrets.OU_CONTAINER_REPO }}/openunison-k8s-react:${{ env.TAG }}
             docker.io/${{ secrets.OU_CONTAINER_REPO }}/openunison-k8s-react:${{ env.SHORT_TAG }}
             docker.io/${{ secrets.OU_CONTAINER_REPO }}/openunison-k8s-react:latest
 
-            ghcr.io/${{ env.REPO }}:${{ env.TAG }}
-            ghcr.io/${{ env.REPO }}:${{ env.SHORT_TAG }}
-            ghcr.io/${{ env.REPO }}:latest
+            
             
             
             

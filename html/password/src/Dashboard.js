@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { Component } from 'react';
 import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import MuiDrawer from '@mui/material/Drawer';
@@ -18,7 +19,7 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 
 import theme from './theme';
-import { useEffect, useState, useReducer, useRef } from 'react';
+import { useEffect, useState, useReducer, useRef, lazy } from 'react';
 import { loadAttributes } from './tools/biz.js'
 import configData from './config/config.json'
 import Button from '@mui/material/Button';
@@ -35,8 +36,25 @@ import Title from './Title'
 import Stack from '@mui/material/Stack';
 import Grid from '@mui/material/Grid';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import ReactDOM from 'react-dom';
-import {QRCodeSVG} from 'qrcode.react';
+
+
+import FormControlLabel from '@mui/material/FormControlLabel';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
+import Checkbox from '@mui/material/Checkbox';
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
+import { TextField } from '@mui/material';
+import MenuItem from '@mui/material/MenuItem';
+import Autocomplete from '@mui/material/Autocomplete';
+import Alert from '@mui/material/Alert';
+import { Interweave } from 'interweave';
+import Switch from '@mui/material/Switch'
+
+import ReCAPTCHA from "react-google-recaptcha"
+
+//import RegisterFunctions from './register-functions.js'
 
 function useInterval(callback, delay) {
   const savedCallback = useRef();
@@ -140,8 +158,10 @@ function DashboardContent() {
     setPageName(screenName);
   }
 
-  const [config, setConfig] = React.useState({ "frontPage": { "title": "" } });
-  const [user, setUser] = React.useState({ "token": {} });
+  const [config, setConfig] = React.useState({"config":  { "frontPage": { "title": "" }, "attributeNameList": [], "headerTitle": "OpenUnisonX" } } );
+  const [userData, setUserData] = React.useState({"password1":"","password2":""} );
+
+  
 
   const [dialogTitle, setDialogTitle] = React.useState("Loading");
   const [dialogText, setDialogText] = React.useState("Connecting to OpenUnison");
@@ -149,32 +169,19 @@ function DashboardContent() {
   const [dialogButtonFunction, setDialogButtonFunction] = React.useState(function () { });
   const [showDialog, setShowDialog] = React.useState(true);
   const [showDialogButton, setShowDialogButton] = React.useState(false);
+
+  const [showSubmitDialog, setShowSubmitDialog] = React.useState(false);
+  const [submitRequestErrors, setSubmitRequestErrors] = React.useState([]);
+  const [submitRequestSuccess, setSubmitRequestSuccess] = React.useState(false);
+
+  const [extUrls, setExtUrls] = React.useState([]);
+  const [saveEnabled, setSaveEnabled] = React.useState(true);
+  const [scripts, setScripts] = React.useState([]);
   const [ouTheme,setOuTheme] = React.useState(theme);
 
+  
+  
 
-
-  function extendSession() {
-    fetch(configData.SERVER_URL + "main/config")
-      .then(response => {
-        if (!response.ok) {
-
-          return Promise.resolve({});
-
-        } else {
-
-          return response.json();
-        }
-      }).then(data => {
-        if (data && data.displayNameAttribute) {
-          setShowDialog(false);
-        } else {
-          location.reload(true);
-        }
-      }).catch(err => {
-
-        location.reload(true);
-      });
-  }
 
 
   const fetchData = () => {
@@ -182,90 +189,48 @@ function DashboardContent() {
 
 
 
-    fetch(configData.SERVER_URL + "token/config")
+    fetch(configData.SERVER_URL + "password/config")
       .then(response => {
         return response.json()
       })
       .then(dataConfig => {
-        setConfig(dataConfig);
+        
+        
 
+        var localDataConfig = {...dataConfig};
+
+        
+
+        setConfig(localDataConfig);
 
         const deftheme = createTheme({
-                  palette: {
-                    primary: {
-                      main: dataConfig.themePrimaryMain,
-                      dark: dataConfig.themePrimaryDark,
-                      light: dataConfig.themePrimaryLight,
-                
-                    },
-                    secondary: {
-                      main: dataConfig.themeSecondaryMain,
-                      dark: dataConfig.themeSecondaryDark,
-                      light: dataConfig.themeSecondaryLight,
-                    },
-                    error: {
-                      main: dataConfig.errorColor,
-                    }
-                  },
-                });
+          palette: {
+            primary: {
+              main: dataConfig.config.themePrimaryMain,
+              dark: dataConfig.config.themePrimaryDark,
+              light: dataConfig.config.themePrimaryLight,
         
+            },
+            secondary: {
+              main: dataConfig.config.themeSecondaryMain,
+              dark: dataConfig.config.themeSecondaryDark,
+              light: dataConfig.config.themeSecondaryLight,
+            },
+            error: {
+              main: dataConfig.config.errorColor,
+            }
+          },
+        });
+
         setOuTheme(deftheme);
 
-        fetch(configData.SERVER_URL + "token/user")
-          .then(response => {
-            return response.json()
-          })
-          .then(data => {
-            setUser(data);
-            setShowDialog(false);
-
-          })
+        
+        setShowDialog(false);
+        
       })
   }
 
 
-
-  useInterval(() => {
-
-
-
-
-    fetch(configData.SERVER_URL + "sessioncheck")
-      .then(response => {
-        if (response.status == 200) {
-          return response.json();
-        } else {
-          return Promise.resolve({ "minsLeft": 0 });
-        }
-      })
-      .then(data => {
-
-        if (pageName != 'loading') {
-
-          if (data.minsLeft <= 0) {
-            // need to refresh
-            // warn the user
-            setDialogTitle("Session Timeout");
-            setDialogText("Your session has timed out, hit OK to log back in");
-
-            setShowDialog(true);
-            setShowDialogButton(true);
-          } else if (data.minsLeft < config.warnMinutesLeft) {
-
-            // warn the user
-            setDialogTitle("Session Timeout Warning");
-            setDialogText("Warning, your session will timeout in " + data.minsLeft + " minutes, hit OK to continue your session");
-
-            setShowDialog(true);
-            setShowDialogButton(true);
-          } else {
-            setShowDialog(false);
-            setShowDialogButton(false);
-          }
-        }
-      })
-
-  }, 60000);
 
   useEffect(() => {
     fetchData();
@@ -273,7 +238,7 @@ function DashboardContent() {
 
 
 
-
+  
 
   return (
     <ThemeProvider theme={ouTheme}>
@@ -328,7 +293,7 @@ function DashboardContent() {
               noWrap
               sx={{ flexGrow: 1 }}
             >
-              {config.headerTitle}
+              { config.config.headerTitle }
             </Typography>
 
           </Toolbar>
@@ -349,7 +314,7 @@ function DashboardContent() {
           </Toolbar>
           <Divider />
 
-          <NavList user={user} config={config} />
+          <NavList config={config} />
 
 
         </Drawer>
@@ -367,57 +332,103 @@ function DashboardContent() {
         >
           <Toolbar />
           <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }} >
-            <Stack>
-              <Title>{config.frontPage.title}</Title>
-              {config.frontPage.text}
-              <Grid container spacing={1} >
-                {
-                  Object.keys(user.token).map(key => {
-                    return <Grid item xs={12} key={key}>
-                      <Grid container spacing={0} >
-                        <Grid item xs={1}>
-                          <IconButton aria-label="copy" onClick={event => {
-                            navigator.clipboard.writeText(user.token[key]);
-                          }}>
-                            <ContentCopyIcon />
-                          </IconButton>
-                        </Grid>
-                        <Grid item xs={4}>
-                          <b>{key}</b>
-                        </Grid>
-                        <Grid item xs={7}>
-                          <pre style={{
-                            "display": "block",
-                            "padding": "9.5px",
-                            "margin": "0 0 10px",
-                            "color": "#333",
-                            "border": "1px solid #ccc",
-                            "overflow": "auto"
-                          }}>{user.token[key]}</pre>
-                        </Grid>
-                      </Grid>
-                      {
-                        key == config.qrCodeAttribute ? 
-                        <Grid container spacing={0} >
-                          <Grid item xs={5}>
-                            
-                          </Grid>
-                          <Grid item xs={7}>
-                          <QRCodeSVG
-                            value={user.token[key]}        // The URL to encode
-                            size={200}         // Size of the QR Code (200x200 px)
-                            bgColor="#ffffff"  // Background color
-                            fgColor="#000000"  // Foreground color
-                            level="H"          // Error correction level (L, M, Q, H)
-                          />
-                          </Grid>
-                        </Grid>
-                        
-                        : ""
-                      }
-                    </Grid>
-                  })
-                }
+            <Stack spacing={2}>
+              <Title>{config.config.frontPage.title}</Title>
+              {config.config.frontPage.text}
+
+              {(submitRequestErrors.length > 0 ?
+                <Alert severity="error">
+                  <b>There was a problem submitting your request:</b>
+                  <ul>
+                    {
+                      submitRequestErrors.map((msg) => {
+                        return <li>{msg}</li>
+                      })
+                    }
+                  </ul>
+                </Alert>
+
+                : "")}
+              {(submitRequestSuccess > 0 ?
+                <Alert severity="success">
+                  <b>Your request has been submitted</b>
+                </Alert>
+
+                : "")}
+
+                <TextField
+                label="Password"
+                type="password"
+                value={userData.password1}
+                onChange={event => { var localUserData = { ...userData }; localUserData.password1 = event.target.value; setUserData(localUserData)  }}
+                 />
+
+                <TextField
+                label="Confirm Password"
+                type="password"
+                value={userData.password2}
+                onChange={event => { var localUserData = { ...userData }; localUserData.password2 = event.target.value; setUserData(localUserData)  }}
+                 />
+
+              <Grid container spacing={2} >
+                
+
+              
+
+                
+
+              <Grid container spacing={2} >
+                <Grid item xs={12} md={6} >
+                  <Button fullWidth disabled={!saveEnabled} onClick={(event => {
+                    setSaveEnabled(false);
+                    setDialogTitle("Submitting Password Update");
+                    setDialogText("Submitting your request");
+
+                    setShowDialog(true);
+
+
+                    
+
+
+
+                    const requestOptions = {
+                      mode: "cors",
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify(userData)
+                    };
+
+                    fetch(configData.SERVER_URL + "password/submit", requestOptions)
+                      .then(response => {
+                        if (response.status == 200) {
+                          setSubmitRequestSuccess(true);
+                          setShowDialog(false);
+                          setSubmitRequestErrors([]);
+
+                          return Promise.resolve({});
+                        } else {
+                          return response.json();
+                        }
+                      })
+                      .then(data => {
+                        if (data.errors) {
+                          setSubmitRequestErrors(data.errors);
+                          setSaveEnabled(true);
+                        }
+
+                        setShowDialog(false);
+                      })
+
+
+                  })} >Submit Your New Password</Button>
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <Button fullWidth disabled={!saveEnabled}
+                    onClick={event => { window.location = config.homeURL; }}
+
+                  >Cancel Password Update</Button>
+                </Grid>
+              </Grid>
               </Grid>
             </Stack>
 
@@ -426,6 +437,9 @@ function DashboardContent() {
 
 
             <Copyright sx={{ pt: 4 }} />
+
+
+
           </Container>
         </Box>
       </Box>

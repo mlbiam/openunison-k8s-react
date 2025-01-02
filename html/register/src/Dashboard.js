@@ -49,6 +49,10 @@ import { TextField } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
 import Autocomplete from '@mui/material/Autocomplete';
 import Alert from '@mui/material/Alert';
+import { Interweave } from 'interweave';
+import Switch from '@mui/material/Switch'
+
+import ReCAPTCHA from "react-google-recaptcha"
 
 //import RegisterFunctions from './register-functions.js'
 
@@ -154,7 +158,7 @@ function DashboardContent() {
     setPageName(screenName);
   }
 
-  const [config, setConfig] = React.useState({ "frontPage": { "title": "" }, "attributeNameList": [] });
+  const [config, setConfig] = React.useState({ "frontPage": { "title": "" }, "attributeNameList": [], "headerTitle": "OpenUnisonX" });
   const [userData, setUserData] = React.useState({});
 
   const [user, setUser] = React.useState({ "token": {} });
@@ -173,6 +177,11 @@ function DashboardContent() {
   const [extUrls, setExtUrls] = React.useState([]);
   const [saveEnabled, setSaveEnabled] = React.useState(true);
   const [scripts, setScripts] = React.useState([]);
+  const [ouTheme,setOuTheme] = React.useState(theme);
+
+  const [rcResponse,setRcResponse] = React.useState("");
+  const recaptchaRef = React.createRef();
+  
 
 
 
@@ -211,7 +220,10 @@ function DashboardContent() {
         return response.json()
       })
       .then(dataConfig => {
-        setConfig(dataConfig);
+        
+        
+
+        var localDataConfig = {...dataConfig};
 
         setExtUrls(dataConfig.jsUris);
 
@@ -240,7 +252,33 @@ function DashboardContent() {
           localUserData.enabledAttrs[key] = true;
         });
 
+        if (rcResponse != "") {
+          localUserData.reCaptchaCode = rcResponse;
+        }
+
+        setConfig(localDataConfig);
         setUserData(localUserData);
+
+        const deftheme = createTheme({
+          palette: {
+            primary: {
+              main: dataConfig.themePrimaryMain,
+              dark: dataConfig.themePrimaryDark,
+              light: dataConfig.themePrimaryLight,
+        
+            },
+            secondary: {
+              main: dataConfig.themeSecondaryMain,
+              dark: dataConfig.themeSecondaryDark,
+              light: dataConfig.themeSecondaryLight,
+            },
+            error: {
+              main: dataConfig.errorColor,
+            }
+          },
+        });
+
+        setOuTheme(deftheme);
 
         var newScripts = [];
 
@@ -324,6 +362,10 @@ function DashboardContent() {
     }
   }
 
+  function controlLabelSimple(attributeName) {
+    return config.attributes[attributeName].displayName;
+  }
+
   function onEnabledCheckboxChanged(event,attributeConfig) {
     var localConfig = {...config};
     var localUserData = { ...userData };
@@ -331,9 +373,51 @@ function DashboardContent() {
 
     if (! event.target.checked) {
       localUserData.attributes[attributeConfig.name] = "";
-    }
+    } 
+    
     setConfig(localConfig);
     setUserData(localUserData);
+
+  }
+
+  function onTextButtonInputChange(event, attributeConfig) {
+    /*var localUserData = {...userData};
+    localUserData.attributes[attributeConfig.name] = event.target.value;
+    setUserData(localUserData);*/
+
+    
+    var localUserData = { ...userData };
+
+
+    if (event.target.textContent) {
+      localUserData.attributes[attributeConfig.name] = event.target.textContent;
+    }
+    else {
+      localUserData.attributes[attributeConfig.name] = event.target.value;
+    }
+
+
+
+
+    var eventObj = {
+      configData: configData,
+      event: event,
+      attributeConfig: attributeConfig,
+      userData: localUserData,
+      config: { ...config },
+      setUserData: setUserData,
+      setConfig: setConfig,
+      setSubmitRequestErrors: setSubmitRequestErrors
+    };
+
+
+    
+    setUserData(localUserData);
+    setConfig(config);
+    
+    
+
+
 
   }
 
@@ -342,7 +426,7 @@ function DashboardContent() {
     localUserData.attributes[attributeConfig.name] = event.target.value;
     setUserData(localUserData);*/
 
-    if (attributeConfig.type == "text-list-box" || attributeConfig.type == "text-list") {
+    if (attributeConfig.type == "text-list-box" || attributeConfig.type == "text-list" || attributeConfig.type == "chk-text-list-box") {
       fetch(configData.SERVER_URL + "register/values?name=" + attributeConfig.name + '&search=' + event.target.value)
         .then(
           response => {
@@ -374,6 +458,32 @@ function DashboardContent() {
 
   function onListInputChange(event, attributeConfig) {
     editEvent(attributeConfig, event);
+  }
+
+  function onButtonClick(attributeConfig, event) {
+    var localUserData = { ...userData };
+
+    var eventObj = {
+      configData: configData,
+      event: event,
+      attributeConfig: attributeConfig,
+      userData: localUserData,
+      config: { ...config },
+      setUserData: setUserData,
+      setConfig: setConfig,
+      setSubmitRequestErrors: setSubmitRequestErrors,
+      setShowSubmitDialog: setShowSubmitDialog
+    };
+
+
+    if (attributeConfig.editJavaScriptFunction) {
+      eval(attributeConfig.editJavaScriptFunction);
+    } else {
+      setUserData(localUserData);
+      setConfig(config);
+    }
+
+
   }
 
   function editEvent(attributeConfig, event) {
@@ -447,6 +557,12 @@ function DashboardContent() {
     });
 
 
+    // if (userData.attributes[attributeConfig.name] != null && userData.attributes[attributeConfig.name].length > 0 ) {
+    //   attributeConfig.enabled = true;
+    // } else {
+    //   attributeConfig.enabled = false;
+    // }
+
 
     return <Autocomplete
       key={attributeConfig.name}
@@ -459,7 +575,7 @@ function DashboardContent() {
 
       renderInput={(params) => 
         <React.Fragment>
-        <Checkbox onChange={event => {onEnabledCheckboxChanged(event,attributeConfig)} } checked={attributeConfig.enabled}/> Enable {controlLabel(attributeConfig.name)}
+        <Switch checked={attributeConfig.enabled} onChange={event => {onEnabledCheckboxChanged(event,attributeConfig)} }/>  Enable {controlLabelSimple(attributeConfig.name)}
         <TextField {...params} variant="outlined" label={controlLabel(attributeConfig.name)} onChange={event => { onTextInputChange(event, attributeConfig) }}  disabled={! attributeConfig.enabled} />
         </React.Fragment>
       }
@@ -467,6 +583,19 @@ function DashboardContent() {
       value={{ "label": userData.attributes[attributeConfig.name], "value": userData.attributes[attributeConfig.name] }}
     />
 
+  }
+
+
+  function createTextButtonInput(attributeConfig) {
+    return <Stack><TextField
+      label={controlLabel(attributeConfig.name)}
+      value={userData.attributes[attributeConfig.name]}
+      onChange={event => { onTextButtonInputChange(event, attributeConfig) }}
+      multiline={attributeConfig.type == "textarea"}
+      rows={20}
+      fullWidth
+      
+      key={attributeConfig.name} /><Button variant="contained" onClick={event => { onButtonClick(attributeConfig,event) }} fullWidth >Lookup</Button></Stack>
   }
 
   function createTextInput(attributeConfig) {
@@ -515,6 +644,7 @@ function DashboardContent() {
 
     switch (attributeConfig.type) {
       case "text": return createTextInput(attributeConfig);
+      case "text-button": return createTextButtonInput(attributeConfig);
       case "list": return createListInput(attributeConfig);
       case "textarea": return createTextInput(attributeConfig);
       case "text-list": return createTextListInput(attributeConfig);
@@ -527,7 +657,7 @@ function DashboardContent() {
   }
 
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={ouTheme}>
       <Dialog
         open={showDialog}
 
@@ -579,7 +709,7 @@ function DashboardContent() {
               noWrap
               sx={{ flexGrow: 1 }}
             >
-              OpenUnison
+              { config.headerTitle }
             </Typography>
 
           </Toolbar>
@@ -666,6 +796,40 @@ function DashboardContent() {
 
                   })
                 }
+
+                { config.requireReCaptcha ? 
+                <React.Fragment>
+                  <Grid item xs={formClass()}>
+                    <ReCAPTCHA
+                      ref={recaptchaRef}
+                      sitekey={config.rcSiteKey} onChange={event => {
+                        
+                      }} />
+                  </Grid>
+                </React.Fragment>
+                
+                : ""}
+
+
+                { config.requireTermsAndConditions ? 
+                  <React.Fragment>
+                    <Grid item xs={formClass()}>
+                      <Interweave content={config.termsAndConditionsText	} /> 
+                    </Grid>
+                    <Grid item xs={formClass()}>
+                      <FormControlLabel control={<Checkbox value={userData.checkedTermsAndConditions}  onChange={event => {
+                        var localUserData = {...userData}
+                        localUserData.checkedTermsAndConditions	= event.target.checked;
+                        setUserData(localUserData);
+
+                      }}/>} label="I Accept" />
+                    </Grid>
+                  </React.Fragment>  
+                  
+                : "" }
+
+                
+
                 <Grid item xs={12}  >
                   {
                     config.requireReason ?
@@ -723,6 +887,11 @@ function DashboardContent() {
                         userData.attributes[key] = "";
                       }
                     })
+
+                    if (config.requireReCaptcha) {
+                      userData.reCaptchaCode = recaptchaRef.current.getValue();
+                      recaptchaRef.current.reset();
+                    }
 
 
 
