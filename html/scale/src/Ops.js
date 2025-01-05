@@ -157,7 +157,7 @@ export default function Ops(props) {
     }
 
     const fetchWorkflows = async(node) => {
-        setCancelLoad(false);
+        
         fetch(configData.SERVER_URL + "main/workflows/org/" + node)
             .then(response => {
 
@@ -179,7 +179,7 @@ export default function Ops(props) {
 
                 semaphore.waitUntilEmpty().then(x => {
                     setShowLoadDialog(false);   
-                    setCancelLoad(false);
+                    
                 });
                 
                 
