@@ -13,6 +13,12 @@ import InputLabel from '@mui/material/InputLabel';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import LinearProgress from '@mui/material/LinearProgress';
+import Dialog from '@mui/material/Dialog';
+
 export default function RequestAccess(props) {
     const [workflows, setWorkflows] = React.useState({ wfs: [] })
     const [visibleWorkflows, setVisibleWorkflows] = React.useState({ wfs: [] })
@@ -20,8 +26,10 @@ export default function RequestAccess(props) {
     const [currentOrg, setCurrentOrg] = React.useState({});
     const [annotationFilters,setAnnotationFilters] = React.useState({});
     const [selectedFilters,setSelectedFilters] = React.useState({});
+    const [showLoadDialog, setShowLoadDialog] = React.useState(false);
 
     function fetchWorkflows(node) {
+        setShowLoadDialog(true);
         fetch(configData.SERVER_URL + "main/workflows/org/" + node)
             .then(response => {
 
@@ -58,6 +66,7 @@ export default function RequestAccess(props) {
                 setWorkflows(newLinks);
                 setVisibleWorkflows(newLinks);
                 setFilter("");
+                setShowLoadDialog(false);
             })
     }
 
@@ -118,6 +127,21 @@ export default function RequestAccess(props) {
 
     return (
         <React.Fragment>
+            <Dialog
+                open={showLoadDialog}
+
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+            >
+                <DialogTitle id="alert-dialog-title">Loading</DialogTitle>
+                <DialogContent>
+                    <DialogContentText id="alert-dialog-description">
+                        Please wait while we load what can be requested
+                        <LinearProgress />
+                    </DialogContentText>
+                </DialogContent>
+            </Dialog>
+
             <Grid container spacing={0}>
                 {/* Chart */}
 
