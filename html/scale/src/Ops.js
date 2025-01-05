@@ -45,8 +45,9 @@ import OpsWorkflows from './OpsWorkflows';
 import Orgs from './Orgs';
 
 import Alert from '@mui/material/Alert';
-import { Checkbox } from '@mui/material';
+import { Checkbox, DialogActions } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import Semaphore from './Semaphore';
 
 import configData from './config/config.json'
 
@@ -76,7 +77,9 @@ export default function Ops(props) {
 
     const [forceRedraw,setForceRedraw] = React.useState(Math.random);
 
-
+    const [semaphore, setSemaphore] = React.useState(new Semaphore(10));
+    
+    const [showLoadDialog,setShowLoadDialog] = React.useState(false);
 
     var searchAttrs = {}
     props.opsConfig.searchableAttributes.map(attrCfg => {
@@ -113,7 +116,48 @@ export default function Ops(props) {
         },
     }));
 
-    function fetchWorkflows(node) {
+    const fetchDelegate = async(url,wf) => {
+        const controller = semaphore.getAbortController(); // Get AbortController for cancellation
+        const options = {"signal" : controller.signal}; // Attach signal to the fetch options
+
+        await semaphore.acquire();
+        
+        try {
+        
+        const response = await fetch(url,options)
+        
+            .then(response => {
+            return response.json();
+            })
+            .then(json => {
+                wf.canPreApprove = json.canPreApprove;
+                wf.canDelegate = json.canDelegate;
+
+                if (wf.canPreApprove) {
+                    wf.tryPreApprove = props.opsConfig.approveChecked;
+                    wf.showPreApprove = props.opsConfig.showPreApprove;
+
+                    wf.approvedLabel = props.opsConfig.approvedLabel;
+                    wf.deniedLabel = props.opsConfig.deniedLabel;
+                    wf.reasonApprovedLabel = props.opsConfig.reasonApprovedLabel;
+                    wf.reasonDeniedLabel = props.opsConfig.reasonDeniedLabel;
+                }
+
+                //setForceRedraw(Math.random)
+            })
+        } catch (err) {
+            if (err.name === 'AbortError') {
+                console.error('Fetch aborted:', url);
+              } else {
+                console.error('Fetch error:', err);
+              }
+        } finally {
+            semaphore.release();
+        }
+    }
+
+    const fetchWorkflows = async(node) => {
+        
         fetch(configData.SERVER_URL + "main/workflows/org/" + node)
             .then(response => {
 
@@ -125,32 +169,17 @@ export default function Ops(props) {
 
 
             })
-            .then(data => {
+            .then(async(data) => {
                 var wfs = data;
                 
                 
                 wfs.map(wf => {
-                    fetch(configData.SERVER_URL + "main/workflows/candelegate?workflowName=" + wf.name + "&uuid=" + wf.uuid)
+                    fetchDelegate(configData.SERVER_URL + "main/workflows/candelegate?workflowName=" + wf.name + "&uuid=" + wf.uuid,wf);
+                });
+
+                semaphore.waitUntilEmpty().then(x => {
+                    setShowLoadDialog(false);   
                     
-                        .then(response => {
-                        return response.json();
-                        })
-                        .then(json => {
-                            wf.canPreApprove = json.canPreApprove;
-                            wf.canDelegate = json.canDelegate;
-
-                            if (wf.canPreApprove) {
-                                wf.tryPreApprove = props.opsConfig.approveChecked;
-                                wf.showPreApprove = props.opsConfig.showPreApprove;
-
-                                wf.approvedLabel = props.opsConfig.approvedLabel;
-                                wf.deniedLabel = props.opsConfig.deniedLabel;
-                                wf.reasonApprovedLabel = props.opsConfig.reasonApprovedLabel;
-                                wf.reasonDeniedLabel = props.opsConfig.reasonDeniedLabel;
-                            }
-
-                            setForceRedraw(Math.random)
-                        })
                 });
                 
                 
@@ -171,7 +200,7 @@ export default function Ops(props) {
                             wfAnnotations[annotationLabel] = vals;
                         }
                     })
-                });
+                })
 
                 
 
@@ -180,12 +209,15 @@ export default function Ops(props) {
                 setWorkflows(newLinks);
                 setVisibleWorkflows(newLinks);
                 setFilter("");
+                
             })
     }
 
-    function handleRequestAccessOrgClick(event, node) {
+    const handleRequestAccessOrgClick = async(event, node) => {
         setCurrentOrg(props.orgsById[node]);
-        fetchWorkflows(node);
+        setShowLoadDialog(true);
+        await fetchWorkflows(node);
+        
 
     }
 
@@ -194,7 +226,11 @@ export default function Ops(props) {
         filterWorkflows(event.target.value,selectedFilters);
     }
 
-    
+    const handelCancel = async() => {
+        semaphore.cancelAll();
+        await semaphore.waitUntilEmpty();
+        setShowLoadDialog(false);
+    }
 
     function filterWorkflows(filterValue,filterAnnotations) {
         if (! filterAnnotations) {
@@ -338,6 +374,7 @@ export default function Ops(props) {
 
     return (
         <React.Fragment>
+            
             <Dialog
                 open={showSubmitDialog}
 
@@ -350,6 +387,24 @@ export default function Ops(props) {
                         {dialogText}
                         <LinearProgress />
                     </DialogContentText>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog
+                open={showLoadDialog}
+
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+            >
+                <DialogTitle id="alert-dialog-title">Loading Workflows</DialogTitle>
+                <DialogContent>
+                    <DialogContentText id="alert-dialog-description">
+                        Verifying Permissions
+                        <LinearProgress />
+                    </DialogContentText>
+                    <DialogActions>
+                        <Button onClick={handelCancel}>Cancel</Button>
+                    </DialogActions>
                 </DialogContent>
             </Dialog>
 

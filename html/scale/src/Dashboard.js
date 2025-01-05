@@ -495,7 +495,7 @@ function DashboardContent() {
 
 
     
-
+    
     fetch(configData.SERVER_URL + "sessioncheck")
       .then(response => {
         if (response.status == 200) {
