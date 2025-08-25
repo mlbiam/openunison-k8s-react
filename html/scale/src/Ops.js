@@ -551,7 +551,17 @@ export default function Ops(props) {
                         }
                         );
 
-                }} >Search</Button>
+                }
+                
+                
+                
+                }
+
+                variant="contained"
+                
+                
+                
+                >Search</Button>
                 {searchResults.length > 0 ? <React.Fragment><h3>Search Results</h3>
 
                     <TableContainer >

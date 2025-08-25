@@ -74,7 +74,7 @@ export default function NavList(props) {
 
             <List component="nav">
 
-                <ListItemButton selected={props.pageName == 'user'} onClick={(event) => {
+                <ListItemButton selected={props.pageName == 'user'}  aria-current="user"  onClick={(event) => {
                     props.chooseScreenHandler('user');
 
 
@@ -88,10 +88,13 @@ export default function NavList(props) {
 
                 { isHidden('front-page') ? "" :
                 
-                <ListItemButton selected={props.pageName == 'front-page'} onClick={(event) => {
+                <ListItemButton selected={props.pageName == 'front-page'} aria-current="front-page" onClick={(event) => {
                     props.chooseScreenHandler('front-page');
 
-                }}>
+                }}
+                
+                
+                >
                     <ListItemIcon>
                         <HomeIcon />
                     </ListItemIcon>
@@ -104,7 +107,7 @@ export default function NavList(props) {
                 { isHidden('request-access') ? "" :
                 
                 props.config.enableApprovals ?
-                    <ListItemButton selected={props.pageName == 'request-access'} onClick={(event) => {
+                    <ListItemButton selected={props.pageName == 'request-access'} aria-current="request-access" onClick={(event) => {
                         props.chooseScreenHandler('request-access');
 
                     }}>
@@ -118,7 +121,7 @@ export default function NavList(props) {
                 {props.config.enableApprovals && Object.keys(props.cart).length > 0 ?
 
 
-                    <ListItemButton onClick={(event) => {
+                    <ListItemButton selected={props.pageName == 'checkout'} aria-current="checkout" onClick={(event) => {
                         props.chooseScreenHandler('checkout');
                     }}>
                         <ListItemIcon>
@@ -133,7 +136,7 @@ export default function NavList(props) {
                 {props.config.enableApprovals && props.approvals.open.length > 0 ?
 
 
-                <ListItemButton onClick={(event) => {
+                <ListItemButton selected={props.pageName == 'approvals'} aria-current="approvals" onClick={(event) => {
                     props.chooseScreenHandler('approvals');
                 }}>
                     <ListItemIcon>
@@ -146,7 +149,7 @@ export default function NavList(props) {
                 : ""}
 
 
-                {props.config.enableApprovals ? <ListItemButton onClick={(event) => {
+                {props.config.enableApprovals ? <ListItemButton selected={props.pageName == 'reports'} aria-current="reports" onClick={(event) => {
                     props.chooseScreenHandler('reports');
                 }}>
                     <ListItemIcon>
@@ -158,6 +161,8 @@ export default function NavList(props) {
                 { props.enableOps ? 
                 
                 <ListItemButton
+                    selected={props.pageName == 'ops'}
+                    aria-current="ops"
                     onClick={(event) => {
                         props.chooseScreenHandler('ops');
 
@@ -174,6 +179,8 @@ export default function NavList(props) {
                 
                 : ""}
                 <ListItemButton
+                    selected={props.pageName == 'logout'}
+                    aria-current="logout"
                     onClick={(event) => {
                         if (Object.keys(props.cart).length > 0) {
                             setLogoutWarning(true);
