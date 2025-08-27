@@ -34,11 +34,20 @@ import OpsWorkflow from './OpsWorkflow';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import configData from './config/config.json'
 
+
 export default function CheckOut(props) {
     const [forceRedraw, setFoceRedraw] = React.useState(Math.random);
+    
     const [showSubmitDialog, setShowSubmitDialog] = React.useState(false);
+    const [dialogTitle, setDialogTitle] = React.useState("Submitting your requests...");
+    const [dialogText, setDialogText] = React.useState("Submitting your requests...");
+    const [showDialogButton,setShowDialogButton] = React.useState(false);
+    const [showDialogProgress,setShowDialogProgress] = React.useState(true);
+
     const [submitRequestErrors, setSubmitRequestErrors] = React.useState([]);
     const [submitRequestSuccess, setSubmitRequestSuccess] = React.useState([]);
+    const [onYesAction,setOnYesAction] = React.useState();
+    const [submitRequestSuccessTitle,setSubmitSuccessTitle] = React.useState("Your requests have been submitted");
 
     function setWorkflow(wf) {
         var lwf = {...wf};
@@ -48,8 +57,31 @@ export default function CheckOut(props) {
 
     function removeWorkflowButton(wf) {
         return <Button variant="contained" onClick={(event) => {
-            props.removeWorkflowFromCart(wf);
+            //props.removeWorkflowFromCart(wf);
+            
+
+            
+            showDialog("Remove Workflow from cart?","Remove the workflow " + wf.label + " from your cart?",true,false,() => {
+                props.removeWorkflowFromCart(wf);
+                setSubmitSuccessTitle("Your cart has been updated:");
+                setSubmitRequestSuccess(["Request " + wf.label + " removed from your cart"]);
+                closeDialog();
+                props.setLoadedStatus("Request " + wf.label + " removed from your cart");
+            });
         }} >Remove from Cart</Button>
+    }
+
+    function showDialog(title, text, showButtons,showProgress, clickYesAction) {
+        setDialogText(text);
+        setDialogTitle(title);
+        setShowDialogButton(showButtons);
+        setShowDialogProgress(showProgress);
+        setOnYesAction(() => clickYesAction);
+        setShowSubmitDialog(true);
+    }
+
+    function closeDialog() {
+        setShowSubmitDialog(false);
     }
 
     return (
@@ -61,14 +93,21 @@ export default function CheckOut(props) {
                 aria-describedby="alert-dialog-description"
             >
                 <DialogTitle id="alert-dialog-title">
-                    {"Submitting your requests..."}
+                    {dialogTitle}
                 </DialogTitle>
                 <DialogContent>
                     <DialogContentText id="alert-dialog-description">
-                        Submitting your requests...
-                        <LinearProgress />
+                        {dialogText}
+                        { showDialogProgress ? <LinearProgress /> : ""}
                     </DialogContentText>
                 </DialogContent>
+                {showDialogButton ?
+                    <DialogActions>
+                        <Button variant='contained' onClick={(event => {onYesAction()})}>Yes</Button>
+                        <Button variant='contained' autoFocus onClick={event => {
+                            closeDialog();
+                        }} >No</Button>
+                    </DialogActions> : ""}
             </Dialog>
 
             <h1>Finish Submitting Your Requests</h1>
@@ -87,7 +126,7 @@ export default function CheckOut(props) {
                 : "")}
             {(submitRequestSuccess.length > 0 ?
                 <Alert severity="success">
-                    <b>Your requests have been submitted:</b>
+                    <b>{submitRequestSuccessTitle}</b>
                     <ul>
                         {
                             submitRequestSuccess.map((msg) => {
@@ -129,9 +168,11 @@ export default function CheckOut(props) {
 
                     })}
                 </Grid>
-                <Button variant="contained" size="large" onClick={(event) => {
+                { (Object.keys(props.cart).length > 0) ? 
+                <Button variant="contained" size="large"   onClick={(event) => {
                     // show dialog
-                    setShowSubmitDialog(true);
+                    setSubmitSuccessTitle("Your requests have been submitted");
+                    showDialog("Submit requests from your cart","Submitting the requests from your cart...",false,true,() => {});
 
                     // create the payload
                     var wfRequests = [];
@@ -193,9 +234,9 @@ export default function CheckOut(props) {
 
                             setSubmitRequestSuccess(wfSuccess);
                             setSubmitRequestErrors(wfError);
-                            setShowSubmitDialog(false);
+                            closeDialog();
                         })
-                }} startIcon={<ConfirmationNumberIcon />}>Submit Your Requests</Button>
+                }} startIcon={<ConfirmationNumberIcon />}>Submit Your Requests</Button> : "" }
             </Grid>
 
         </React.Fragment>

@@ -82,14 +82,15 @@ export default function RequestAccess(props) {
     }
 
     function filterWorkflows(filterValue,filterAnnotations) {
+        
         setFilter(filterValue);
-
+        filterValue = filterValue.toLowerCase();
 
         var newVisibleWfs = { wfs: [] };
         workflows.wfs.map((wf) => {
 
 
-            if (filterValue == '' || wf.label.includes(filterValue)) {
+            if (filterValue == '' || wf.label.toLowerCase().includes(filterValue)) {
                 var matchFilters = true;
 
                 Object.keys(filterAnnotations).map(annotationLabel => {

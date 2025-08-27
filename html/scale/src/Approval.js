@@ -256,6 +256,7 @@ export default function Approval(props) {
                                 setShowSubmitDialog(false);
                                 setSubmitRequestErrors([]);
                                 props.loadOpenApprovals();
+                                props.setLoadedStatus((approvalData.approved ? "Approval was submitted" : "Rejection was submitted"));
                                 return Promise.resolve({});
                             } else {
                                 return response.json();
@@ -263,6 +264,7 @@ export default function Approval(props) {
                         })
                         .then(data => {
                             if (data.errors) {
+                                props.setLoadedStatus((approvalData.approved ? "There were errors submitting your approval" : "There were errors submitting your rejection"));
                                 setSubmitRequestErrors(data.errors);
                                 setShowSubmitDialog(false);
                             }
