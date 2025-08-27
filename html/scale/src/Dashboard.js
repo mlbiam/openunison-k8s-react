@@ -551,50 +551,50 @@ function DashboardContent() {
 
 
 
-  // useInterval(() => {
+  useInterval(() => {
 
 
     
     
-  //   fetch(configData.SERVER_URL + "sessioncheck")
-  //     .then(response => {
-  //       if (response.status == 200) {
-  //         return response.json();
-  //       } else {
-  //         return Promise.resolve({ "minsLeft": 0 });
-  //       }
-  //     })
-  //     .then(data => {
+    fetch(configData.SERVER_URL + "sessioncheck")
+      .then(response => {
+        if (response.status == 200) {
+          return response.json();
+        } else {
+          return Promise.resolve({ "minsLeft": 0 });
+        }
+      })
+      .then(data => {
         
-  //       if (pageName != 'loading') {
+        if (pageName != 'loading') {
           
-  //         if (data.minsLeft <= 0) {
-  //           // need to refresh
-  //           // warn the user
-  //           setDialogTitle("Session Timeout");
-  //           setDialogText("Your session has timed out, hit OK to log back in");
+          if (data.minsLeft <= 0) {
+            // need to refresh
+            // warn the user
+            setDialogTitle("Session Timeout");
+            setDialogText("Your session has timed out, hit OK to log back in");
             
-  //           setShowDialog(true);
-  //           setLoadedStatus("Session has timed out");
-  //           setShowDialogButton(true);
-  //         } else if (data.minsLeft < config.warnMinutesLeft) {
+            setShowDialog(true);
+            setLoadedStatus("Session has timed out");
+            setShowDialogButton(true);
+          } else if (data.minsLeft < config.warnMinutesLeft) {
             
-  //           // warn the user
-  //           setDialogTitle("Session Timeout Warning");
-  //           setDialogText("Warning, your session will timeout in " + data.minsLeft + " minutes, hit OK to continue your session");
+            // warn the user
+            setDialogTitle("Session Timeout Warning");
+            setDialogText("Warning, your session will timeout in " + data.minsLeft + " minutes, hit OK to continue your session");
             
-  //           setShowDialog(true);
-  //           setShowDialogButton(true);
-  //           setLoadedStatus("Warning, your session will timeout in " + data.minsLeft + " minutes");
-  //         } else {
-  //           setShowDialog(false);
-  //           setShowDialogButton(false);
-  //           setLoadedStatus("Page loaded and ready");
-  //         }
-  //       }
-  //     })
+            setShowDialog(true);
+            setShowDialogButton(true);
+            setLoadedStatus("Warning, your session will timeout in " + data.minsLeft + " minutes");
+          } else {
+            setShowDialog(false);
+            setShowDialogButton(false);
+            setLoadedStatus("Page loaded and ready");
+          }
+        }
+      })
 
-  // }, 60000);
+  }, 60000);
 
   useEffect(() => {
     fetchData();
