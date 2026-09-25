@@ -38,9 +38,14 @@ export default function AccessWorkflows(props) {
 
                                 </CardContent>
                                 <CardActions>
-                                <Button variant="contained" onClick={(event) => {
+                                <Button variant="contained" 
+                                fullWidth
+                                sx={{
+                                    minHeight: "4rem", // adjust as needed (usually ~2x normal height)
+                                }}
+                                onClick={(event) => {
                                         props.updateCart(event,wf);
-                                    }} >{(props.cart[wf.uuid] ? "Remove from Cart" : "Add to Cart")}</Button>
+                                    }} >{(props.cart[wf.uuid] ? "Remove " + wf.label + " from Cart" : "Add " + wf.label + " to Cart")}</Button>
                                    
                                     
                                 </CardActions>

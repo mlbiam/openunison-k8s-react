@@ -51,6 +51,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 import Alert from '@mui/material/Alert';
 import { Interweave } from 'interweave';
 import Switch from '@mui/material/Switch'
+import { visuallyHidden } from '@mui/utils';
 
 import ReCAPTCHA from "react-google-recaptcha"
 
@@ -181,7 +182,7 @@ function DashboardContent() {
 
   const [rcResponse,setRcResponse] = React.useState("");
   const recaptchaRef = React.createRef();
-  
+  const [loadedStatus,setLoadedStatus] = React.useState("");
 
 
 
@@ -199,6 +200,7 @@ function DashboardContent() {
       }).then(data => {
         if (data && data.displayNameAttribute) {
           setShowDialog(false);
+          setLoadedStatus("Reloaded session");
         } else {
           location.reload(true);
         }
@@ -208,7 +210,42 @@ function DashboardContent() {
       });
   }
 
+  function processErrors(errors) {
+    var localConfig = {...config};
+    var localerrors = [];
 
+    // create the errors list
+    errors.map(error => {
+      var err = {
+        "msg": error,
+        "id": crypto.randomUUID()
+      };
+      localerrors.push(err);
+    })
+
+    // go though each field, check if the error relates to it
+    Object.keys(localConfig.attributes).map(key => {
+      var errLabel = "'" + localConfig.attributes[key].displayName + "'";
+      localConfig.attributes[key].invalid = false;
+      localConfig.attributes[key].errorId = null;
+      localerrors.map(err => {
+        if (err.msg.indexOf(errLabel) >= 0) {
+          localConfig.attributes[key].invalid = true;
+          if (localConfig.attributes[key].errorId) {
+            localConfig.attributes[key].errorId = localConfig.attributes[key].errorId + " " + err.id;
+          } else {
+            localConfig.attributes[key].errorId = err.id;
+          }
+        }
+      })
+
+    });
+
+
+    setSubmitRequestErrors(localerrors)
+    setConfig(localConfig)
+    
+  }
 
   const fetchData = () => {
 
@@ -221,7 +258,7 @@ function DashboardContent() {
       })
       .then(dataConfig => {
         
-        
+        document.title = "OpenUnison Scale - " + dataConfig.frontPage.title;
 
         var localDataConfig = {...dataConfig};
 
@@ -274,7 +311,26 @@ function DashboardContent() {
             },
             error: {
               main: dataConfig.errorColor,
-            }
+            },
+            text: {
+              secondary: '#525252',
+            },
+          },
+          components: {
+            MuiButton: {
+              defaultProps: {
+                disableRipple: true,
+              },
+            },
+            MuiSwitch: {
+              styleOverrides: {
+                switchBase: {
+                  //thumb - unchecked
+                  color: "black"
+                },
+                
+              },
+            },
           },
         });
 
@@ -292,6 +348,7 @@ function DashboardContent() {
 
         setScripts(newScripts);
         setShowDialog(false);
+        setLoadedStatus("Form loaded and ready to by completed.");
         return () => {
           newScripts.map(script => { document.body.removeChild(script) })
         }
@@ -407,7 +464,7 @@ function DashboardContent() {
       config: { ...config },
       setUserData: setUserData,
       setConfig: setConfig,
-      setSubmitRequestErrors: setSubmitRequestErrors
+      setSubmitRequestErrors: processErrors
     };
 
 
@@ -471,7 +528,7 @@ function DashboardContent() {
       config: { ...config },
       setUserData: setUserData,
       setConfig: setConfig,
-      setSubmitRequestErrors: setSubmitRequestErrors,
+      setSubmitRequestErrors: processErrors,
       setShowDialog: setShowDialog,
       setDialogText: setDialogText,
       setDialogTitle: setDialogTitle,
@@ -513,7 +570,7 @@ function DashboardContent() {
       config: { ...config },
       setUserData: setUserData,
       setConfig: setConfig,
-      setSubmitRequestErrors: setSubmitRequestErrors
+      setSubmitRequestErrors: processErrors
     };
 
 
@@ -549,6 +606,8 @@ function DashboardContent() {
       renderInput={(params) => <TextField {...params} variant="outlined" label={controlLabel(attributeConfig.name)} onChange={event => { onTextInputChange(event, attributeConfig) }} />}
       isOptionEqualToValue={(option, value) => option.label == value.label && option.value == value.value}
       value={{ "label": userData.attributes[attributeConfig.name], "value": userData.attributes[attributeConfig.name] }}
+      aria-invalid={attributeConfig.invalid}
+      aria-describedby={attributeConfig.errorId}
     />
 
   }
@@ -580,12 +639,21 @@ function DashboardContent() {
 
       renderInput={(params) => 
         <React.Fragment>
-        <Switch checked={attributeConfig.enabled} onChange={event => {onEnabledCheckboxChanged(event,attributeConfig)} }/>  Enable {controlLabelSimple(attributeConfig.name)}
+        <Switch checked={attributeConfig.enabled} onChange={event => {onEnabledCheckboxChanged(event,attributeConfig)} }
+        
+          
+          
+          />  Enable {controlLabelSimple(attributeConfig.name)}
+          
+        {attributeConfig.enabled && (
         <TextField {...params} variant="outlined" label={controlLabel(attributeConfig.name)} onChange={event => { onTextInputChange(event, attributeConfig) }}  disabled={! attributeConfig.enabled} />
+        )}
         </React.Fragment>
       }
       isOptionEqualToValue={(option, value) => option.label == value.label && option.value == value.value}
       value={{ "label": userData.attributes[attributeConfig.name], "value": userData.attributes[attributeConfig.name] }}
+      aria-invalid={attributeConfig.invalid}
+      aria-describedby={attributeConfig.errorId}
     />
 
   }
@@ -593,13 +661,17 @@ function DashboardContent() {
 
   function createTextButtonInput(attributeConfig) {
     return <Stack><TextField
+      InputLabelProps={{
+        style: { color: '#595959' }
+      }}
       label={controlLabel(attributeConfig.name)}
       value={userData.attributes[attributeConfig.name]}
       onChange={event => { onTextButtonInputChange(event, attributeConfig) }}
       multiline={attributeConfig.type == "textarea"}
       rows={20}
       fullWidth
-      
+      aria-invalid={attributeConfig.invalid}
+      aria-describedby={attributeConfig.errorId}
       key={attributeConfig.name} /><Button variant="contained" onClick={event => { onButtonClick(attributeConfig,event) }} fullWidth >Lookup</Button></Stack>
   }
 
@@ -611,7 +683,9 @@ function DashboardContent() {
       multiline={attributeConfig.type == "textarea"}
       rows={20}
       fullWidth
-      key={attributeConfig.name} />
+      key={attributeConfig.name}
+      aria-invalid={attributeConfig.invalid}
+      aria-describedby={attributeConfig.errorId} />
   }
 
   function createListInput(attributeConfig) {
@@ -621,12 +695,14 @@ function DashboardContent() {
 
 
 
-    return <FormControl fullWidth key={attributeConfig.name}>
+    return <FormControl fullWidth key={attributeConfig.name}
+                        aria-invalid={attributeConfig.invalid}
+                        aria-describedby={attributeConfig.errorId}>
       <InputLabel id={attributeConfig.name + "-label"}>{controlLabel(attributeConfig.name)}</InputLabel>
       <Select
         labelId={attributeConfig.name + "-label"}
         id={attributeConfig.name}
-
+        
         value={userData.attributes[attributeConfig.name]}
         label={controlLabel(attributeConfig.name)}
         onChange={event => {
@@ -762,8 +838,8 @@ function DashboardContent() {
                   <b>There was a problem submitting your request:</b>
                   <ul>
                     {
-                      submitRequestErrors.map((msg) => {
-                        return <li>{msg}</li>
+                      submitRequestErrors.map((err) => {
+                        return <li id={err.id}>{err.msg}</li>
                       })
                     }
                   </ul>
@@ -913,7 +989,8 @@ function DashboardContent() {
                         if (response.status == 200) {
                           setSubmitRequestSuccess(true);
                           setShowDialog(false);
-                          setSubmitRequestErrors([]);
+                          setLoadedStatus("Form submitted.");
+                          processErrors([]);
 
                           return Promise.resolve({});
                         } else {
@@ -922,20 +999,22 @@ function DashboardContent() {
                       })
                       .then(data => {
                         if (data.errors) {
-                          setSubmitRequestErrors(data.errors);
+                          processErrors(data.errors);
                           setSaveEnabled(true);
                         }
 
                         setShowDialog(false);
+                        setLoadedStatus("Form submitted, but there were errors.");
                       })
 
 
-                  })} >Save</Button>
+                  })}
+                  variant='contained' >Save</Button>
                 </Grid>
                 <Grid item xs={12} md={6}>
                   <Button fullWidth disabled={!saveEnabled}
                     onClick={event => { window.location = config.homeURL; }}
-
+                    variant='contained'
                   >Cancel Request</Button>
                 </Grid>
               </Grid>
@@ -946,7 +1025,9 @@ function DashboardContent() {
 
 
             <Copyright sx={{ pt: 4 }} />
-
+            <Typography aria-live="polite" role="status" sx={visuallyHidden}>
+              {loadedStatus}
+            </Typography>
 
 
           </Container>

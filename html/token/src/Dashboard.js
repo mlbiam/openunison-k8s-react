@@ -37,6 +37,7 @@ import Grid from '@mui/material/Grid';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import ReactDOM from 'react-dom';
 import {QRCodeSVG} from 'qrcode.react';
+import { visuallyHidden } from '@mui/utils';
 
 function useInterval(callback, delay) {
   const savedCallback = useRef();
@@ -150,7 +151,7 @@ function DashboardContent() {
   const [showDialog, setShowDialog] = React.useState(true);
   const [showDialogButton, setShowDialogButton] = React.useState(false);
   const [ouTheme,setOuTheme] = React.useState(theme);
-
+  const [loadedStatus,setLoadedStatus] = React.useState("");
 
 
   function extendSession() {
@@ -167,6 +168,7 @@ function DashboardContent() {
       }).then(data => {
         if (data && data.displayNameAttribute) {
           setShowDialog(false);
+          setLoadedStatus("Reloaded session");
         } else {
           location.reload(true);
         }
@@ -187,6 +189,8 @@ function DashboardContent() {
         return response.json()
       })
       .then(dataConfig => {
+        document.title = "OpenUnison Scale - " + dataConfig.frontPage.title;
+        
         setConfig(dataConfig);
 
 
@@ -205,7 +209,17 @@ function DashboardContent() {
                     },
                     error: {
                       main: dataConfig.errorColor,
-                    }
+                    },
+                    text: {
+                      secondary: '#525252',
+                    },
+                  },
+                  components: {
+                    MuiButton: {
+                      defaultProps: {
+                        disableRipple: true,
+                      },
+                    },
                   },
                 });
         
@@ -218,6 +232,7 @@ function DashboardContent() {
           .then(data => {
             setUser(data);
             setShowDialog(false);
+            setLoadedStatus("Token ready");
 
           })
       })
@@ -426,6 +441,9 @@ function DashboardContent() {
 
 
             <Copyright sx={{ pt: 4 }} />
+            <Typography aria-live="polite" role="status" sx={visuallyHidden}>
+              {loadedStatus}
+            </Typography>
           </Container>
         </Box>
       </Box>

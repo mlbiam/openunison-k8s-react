@@ -18,7 +18,22 @@ const theme = createTheme({
     },
     error: {
       main: red.A400,
-    }
+    },
+    text: {
+      secondary: '#595959',
+    },
+  },
+  components: {
+    MuiInputLabel: {
+      styleOverrides: {
+        root: {
+          color: '#595959', // Default state
+        },
+        shrink: {
+          color: '#595959', // When label is shrunk (focused or filled)
+        },
+      },
+    },
   },
 });
 

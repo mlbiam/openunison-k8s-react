@@ -38,6 +38,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import LinearProgress from '@mui/material/LinearProgress';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
+import { visuallyHidden } from '@mui/utils';
 
 import { red } from '@mui/material/colors';
 
@@ -140,8 +141,17 @@ function DashboardContent() {
 
   const [pageName, setPageName] = React.useState('loading');
 
+  const formatPageTitle = (str) => {
+    return str
+      .replace(/-/g, " ") // replace all "-" with spaces
+      .split(" ")         // split into words
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1)) // capitalize first letter
+      .join(" ");         // join back into a string
+  }
+
   const chooseScreenHandler = (screenName) => {
     setPageName(screenName);
+    document.title = 'OpenUnison Scale - ' + formatPageTitle(screenName);
   }
 
   const [config, setConfig] = React.useState({"headerTitle": "OpenUnison"});
@@ -169,7 +179,7 @@ function DashboardContent() {
   const [showDialogButton, setShowDialogButton] = React.useState(false);
 
   const [ouTheme,setOuTheme] = React.useState(theme);
-
+  const [loadedStatus,setLoadedStatus] = React.useState("");
 
   function addWorkflowToCart(wf) {
     var newCart = { ...cart }
@@ -322,7 +332,55 @@ function DashboardContent() {
                 },
                 error: {
                   main: dataConfig.errorColor,
-                }
+                },
+                text: {
+                  secondary: '#525252',
+                },
+              },
+              components: {
+                MuiButton: {
+                  defaultProps: {
+                    disableRipple: true,
+                  }
+                },
+                MuiListItemButton: {
+                  styleOverrides: {
+                    root: {
+                      '&.Mui-selected': {
+                        outline: '2px solid ' + dataConfig.themePrimaryMain, // Add a 2px solid blue outline
+                        outlineOffset: "-2px",
+                        // You can also customize other styles for the selected state here
+                        // e.g., backgroundColor: 'lightblue',
+                      },
+                      ':hover': {
+                          outline: '2px solid #595959', // Add a 2px solid blue outline
+                          outlineOffset: "-2px",
+                          // You can also customize other styles for the selected state here
+                          // e.g., backgroundColor: 'lightblue',
+                        },
+                    },
+                  },
+                },
+                MuiTreeItem: {
+                  styleOverrides: {
+                    root: {
+                      '& .MuiTreeItem-content': {
+                        '&.Mui-selected': {
+                          outline: '2px solid ' + dataConfig.themePrimaryMain, // Add a 2px solid blue outline
+                          outlineOffset: "-2px",
+                          // You can also customize other styles for the selected state here
+                          // e.g., backgroundColor: 'lightblue',
+                        },
+                        ':hover': {
+                          outline: '2px solid #595959', // Add a 2px solid blue outline
+                          outlineOffset: "-2px",
+                          // You can also customize other styles for the selected state here
+                          // e.g., backgroundColor: 'lightblue',
+                        },
+                    },
+                    },
+                  },
+                },
               },
             });
 
@@ -344,6 +402,7 @@ function DashboardContent() {
 
                     setPageName(dataConfig.startPage);
                     setShowDialog(false);
+                    setLoadedStatus("Page loaded and ready");
                   }
                 )
 
@@ -472,6 +531,7 @@ function DashboardContent() {
                         setOrgsForLinksById(localLinkOrgsById);
                         setPageName(dataConfig.startPage);
                         setShowDialog(false);
+                        setLoadedStatus("Page loaded and ready");
                       }
                     )
 
@@ -515,6 +575,7 @@ function DashboardContent() {
             setDialogText("Your session has timed out, hit OK to log back in");
             
             setShowDialog(true);
+            setLoadedStatus("Session has timed out");
             setShowDialogButton(true);
           } else if (data.minsLeft < config.warnMinutesLeft) {
             
@@ -524,9 +585,11 @@ function DashboardContent() {
             
             setShowDialog(true);
             setShowDialogButton(true);
+            setLoadedStatus("Warning, your session will timeout in " + data.minsLeft + " minutes");
           } else {
             setShowDialog(false);
             setShowDialogButton(false);
+            setLoadedStatus("Page loaded and ready");
           }
         }
       })
@@ -579,6 +642,7 @@ function DashboardContent() {
               edge="start"
               color="inherit"
               aria-label="open drawer"
+              aria-hidden={open}
               onClick={toggleDrawer}
               sx={{
                 marginRight: '36px',
@@ -609,11 +673,11 @@ function DashboardContent() {
             }}
           >
             <img src="images/logo-desktop.png" />
-            <IconButton onClick={toggleDrawer}>
+            <IconButton onClick={toggleDrawer} aria-expanded="Hides your logo and the menu labels to provide more room for your work on the screen" aria-hidden={!open}>
               <ChevronLeftIcon />
             </IconButton>
           </Toolbar>
-          <Divider />
+          <Divider area-hidden="true" />
 
           <NavList user={user} config={config} userObj={userObj} chooseScreenHandler={chooseScreenHandler} pageName={pageName} cart={cart} approvals={approvals} enableOps={enableOps} />
 
@@ -640,18 +704,21 @@ function DashboardContent() {
             {pageName == 'front-page' ? (<FrontPage orgs={orgsForLinks} config={config} links={links} title={config.frontPage.title} orgsById={orgsForLinksById}  />) : ("")}
             {pageName == 'user' ? (<User config={config} user={user} userObj={userObj} />) : ("")}
             {pageName == 'request-access' ? (<RequestAccess config={config} user={user} userObj={userObj} orgs={orgs} title={"Request Access"} addWorkflowToCart={addWorkflowToCart}  removeWorkflowFromCart={removeWorkflowFromCart} cart={cart} orgsById={orgsById} />) : ("")}
-            {pageName == 'checkout' ? (<CheckOut cart={cart} config={config} removeWorkflowFromCart={removeWorkflowFromCart} replaceWorkflowInCart={replaceWorkflowInCart} removeWorkflowsFromCart={removeWorkflowsFromCart}/>) : ""}
-            {pageName == 'approvals' ? (<Approvals approvals={approvals} setCurrentApproval={setCurrentApproval} chooseScreenHandler={chooseScreenHandler} />) : ""}
-            {pageName == 'current-approval' ? (<Approval currentApproval={currentApproval} loadOpenApprovals={loadOpenApprovals} config={config} />) : ""}
+            {pageName == 'checkout' ? (<CheckOut cart={cart} config={config} removeWorkflowFromCart={removeWorkflowFromCart} replaceWorkflowInCart={replaceWorkflowInCart} removeWorkflowsFromCart={removeWorkflowsFromCart} setLoadedStatus={setLoadedStatus}/>) : ""}
+            {pageName == 'approvals' ? (<Approvals approvals={approvals} setCurrentApproval={setCurrentApproval} chooseScreenHandler={chooseScreenHandler} setLoadedStatus={setLoadedStatus} />) : ""}
+            {pageName == 'current-approval' ? (<Approval currentApproval={currentApproval} loadOpenApprovals={loadOpenApprovals} config={config} setLoadedStatus={setLoadedStatus} />) : ""}
             {pageName == 'reports' ? (<Reports config={config} user={user} userObj={userObj} orgs={orgs} title={"Reports"} orgsById={orgsById} setReport={setReport} chooseScreenHandler={chooseScreenHandler} />) : ("")}
             {pageName == 'report' ? (<Report config={config} user={user} userObj={userObj} report={report} />) : ""}
-            {pageName == 'ops' ? (<Ops config={config} user={user} userObj={userObj} opsConfig={opsConfig} orgs={orgs} orgsById={orgsById} />) : ""}
+            {pageName == 'ops' ? (<Ops config={config} user={user} userObj={userObj} opsConfig={opsConfig} orgs={orgs} orgsById={orgsById} setLoadedStatus={setLoadedStatus} />) : ""}
 
 
 
 
 
             <Copyright sx={{ pt: 4 }} />
+            <Typography aria-live="polite" role="status" sx={visuallyHidden}>
+              {loadedStatus}
+            </Typography>
           </Container>
         </Box>
       </Box>

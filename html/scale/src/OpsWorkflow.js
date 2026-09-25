@@ -219,7 +219,7 @@ export default function OpsWorkflow(props) {
                                                 
                                                 props.setShowSubmitDialog(false);
                                             });
-                                    }} disabled={(localWf.tryPreApprove &&  (! localWf.approvalReason || localWf.approvalReason == ""))}>Submit Your Requests</Button> }
+                                    }} disabled={(localWf.tryPreApprove &&  (! localWf.approvalReason || localWf.approvalReason == ""))} variant="contained" >Submit Your Request for {localWf.label}</Button> }
                                 </Stack>
 
 

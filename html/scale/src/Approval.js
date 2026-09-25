@@ -126,10 +126,10 @@ export default function Approval(props) {
             {(approval.requestAttributes && Object.keys(approval.requestAttributes).length > 0) ?
             <React.Fragment>
                 <h2>Additional Request Details</h2>
-                <Grid container spacing={0}>
+                <Grid container spacing={0} component="dl">
                 {
                     Object.keys(approval.requestAttributes).map(attrName => {
-                        return <React.Fragment><Grid item xs={12} md={4} ><b>{attrName}</b></Grid><Grid item xs={12} md={8}>{approval.requestAttributes[attrName]}</Grid></React.Fragment>
+                        return <React.Fragment><Grid item xs={12} md={4} component="dt"><b>{attrName}</b></Grid><Grid item xs={12} md={8} component="dt">{approval.requestAttributes[attrName]}</Grid></React.Fragment>
                     })
                 }
                 </Grid>
@@ -140,13 +140,13 @@ export default function Approval(props) {
             {(approval.userObj.attribs && Object.keys(approval.userObj.attribs).length > 0) ?
             <React.Fragment>
                 <h2>Requester Details</h2>
-                <Grid container spacing={0}>
+                <Grid container spacing={0} >
                 <Grid item xs={12} md={4}>
                 <h3>Attributes</h3>
-                <Grid container spacing={0}>
+                <Grid container spacing={0} component="dl">
                 {
                     Object.keys(approval.userObj.attribs).map(attrName => {
-                        return <React.Fragment><Grid item xs={12} md={4} ><b>{attrName}</b></Grid><Grid item xs={12} md={8}>{approval.userObj.attribs[attrName].values[0]}</Grid></React.Fragment>
+                        return <React.Fragment><Grid item xs={12} md={4} component="dt"><b>{attrName}</b></Grid><Grid item xs={12} md={8} component="dt">{approval.userObj.attribs[attrName].values[0]}</Grid></React.Fragment>
                     })
                 }
                 </Grid>
@@ -256,6 +256,7 @@ export default function Approval(props) {
                                 setShowSubmitDialog(false);
                                 setSubmitRequestErrors([]);
                                 props.loadOpenApprovals();
+                                props.setLoadedStatus((approvalData.approved ? "Approval was submitted" : "Rejection was submitted"));
                                 return Promise.resolve({});
                             } else {
                                 return response.json();
@@ -263,6 +264,7 @@ export default function Approval(props) {
                         })
                         .then(data => {
                             if (data.errors) {
+                                props.setLoadedStatus((approvalData.approved ? "There were errors submitting your approval" : "There were errors submitting your rejection"));
                                 setSubmitRequestErrors(data.errors);
                                 setShowSubmitDialog(false);
                             }

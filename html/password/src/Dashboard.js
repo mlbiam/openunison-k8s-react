@@ -53,6 +53,7 @@ import { Interweave } from 'interweave';
 import Switch from '@mui/material/Switch'
 
 import ReCAPTCHA from "react-google-recaptcha"
+import { visuallyHidden } from '@mui/utils';
 
 //import RegisterFunctions from './register-functions.js'
 
@@ -178,7 +179,7 @@ function DashboardContent() {
   const [saveEnabled, setSaveEnabled] = React.useState(true);
   const [scripts, setScripts] = React.useState([]);
   const [ouTheme,setOuTheme] = React.useState(theme);
-
+  const [loadedStatus,setLoadedStatus] = React.useState("");
   
   
 
@@ -218,7 +219,17 @@ function DashboardContent() {
             },
             error: {
               main: dataConfig.config.errorColor,
-            }
+            },
+            text: {
+              secondary: '#525252',
+            },
+          },
+          components: {
+            MuiButton: {
+              defaultProps: {
+                disableRipple: true,
+              },
+            },
           },
         });
 
@@ -226,6 +237,7 @@ function DashboardContent() {
 
         
         setShowDialog(false);
+        setLoadedStatus("Page loaded, ready to enter your password.");
         
       })
   }
@@ -403,6 +415,7 @@ function DashboardContent() {
                         if (response.status == 200) {
                           setSubmitRequestSuccess(true);
                           setShowDialog(false);
+                          setLoadedStatus("Your password was submitted.");
                           setSubmitRequestErrors([]);
 
                           return Promise.resolve({});
@@ -417,6 +430,7 @@ function DashboardContent() {
                         }
 
                         setShowDialog(false);
+                        setLoadedStatus("Your password was submitted, but there were errors.");
                       })
 
 
@@ -437,7 +451,9 @@ function DashboardContent() {
 
 
             <Copyright sx={{ pt: 4 }} />
-
+            <Typography aria-live="polite" role="status" sx={visuallyHidden}>
+              {loadedStatus}
+            </Typography>
 
 
           </Container>
